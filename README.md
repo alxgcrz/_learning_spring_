@@ -30,43 +30,9 @@ En resumen, Spring Boot es una extensión de Spring Framework diseñada para hac
 
 > Introducción generada por ChatGPT
 
-## Spring Boot Cheat Sheet Annotations
+## Core Spring Framework Annotations
 
-### @Repository
-
-- Class Level Annotation
-- It can reach the database and do all the operations.
-- It make the connection between the database and the business logic.
-- DAO is a repository.
-- It is a marker interface.
-
-```java
-@Repository
-public class TestRepo{
-   public void add(){
-      System.out.println("Added");
-   }
-}
-```
-
-### @Service
-
-- Class Level Annotation
-- It is a marker interface.
-- It is a business logic.
-- It is a service layer.
-- It used to create a service layer.
-
-```java
-@Service
-public class TestService{
-   public void service1(){
-      //business code (iş kodları)
-   }
-}
-```
-
-### @Autowired
+### @Autowired (Field, Constructor and Method Level Annotation)
 
 - Field Level Annotation
 - It is used to inject the dependency.
@@ -87,13 +53,164 @@ public class Brand{
 }
 ```
 
-### @Controller
+### @Configuration (Class Level Annotation)
 
-- Class Level Annotation
-- It is a marker interface.
-- It is a controller layer.
-- It is used to create a controller layer.
-- It use with @RequestMapping annotation.
+### @ComponentScan (Class Level Annotation)
+
+### @Bean (Method Level Annotation)
+
+### @Import (Class Level Annotation)
+
+### @PostConstruct & @PreDestroy (Method Level Annotation)
+
+Spring calls the methods annotated with `@PostConstruct` only once, just after the initialization of bean properties. Keep in mind that these methods will run even if there’s nothing to initialize.
+
+The method annotated with `@PostConstruct` can have any access level, but it can’t be static. Annotated methods can have any visibility but must take no parameters and only return void.
+
+One possible use of @PostConstruct is populating a database:
+
+```java
+@Component
+public class DbInit {
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @PostConstruct
+    private void postConstruct() {
+        User admin = new User("admin", "admin password");
+        User normalUser = new User("user", "user password");
+        userRepository.save(admin, normalUser);
+    }
+}
+```
+
+A method annotated with `@PreDestroy` runs only once, just before Spring removes our bean from the application context.
+
+Same as with @PostConstruct, the methods annotated with @PreDestroy can have any access level, but can’t be static.
+
+```java
+@Component
+public class UserRepository {
+
+    private DbConnection dbConnection;
+    @PreDestroy
+    public void preDestroy() {
+        dbConnection.close();
+    }
+}
+```
+
+NOTE: PreDestroy methods called if application shuts down normally. Not if the process dies or is killed.
+
+```java
+ConfigurableApplicationContext context = SpringApplication.run(...);
+
+// Trigger call of all @PreDestroy annotated methods
+context.close();
+```
+
+Alternatively, `@Bean` has options to define these life-cycle methods:
+
+```java
+@Bean(initMethod="populateCache", destroyMethod="flushCache")
+public AccountRepository accountRepository () {
+  //...
+}
+```
+
+So, which scheme to use?
+
+- Use `@PostConstruct` and/or `@PreDestroy` for your own classes
+- Use Lifecycle Method attributes of `@Bean` annotation for classes you didn't write and can't annotate, like third-party libraries.
+
+Note that both the `@PostConstruct` and `@PreDestroy` annotations are part of Java EE. Since Java EE was deprecated in Java 9, and removed in Java 11, we have to add an additional dependency to use these annotations:
+
+```java
+<dependency>
+    <groupId>javax.annotation</groupId>
+    <artifactId>javax.annotation-api</artifactId>
+    <version>1.3.2</version>
+</dependency>
+```
+
+- [Más información](https://docs.spring.io/spring-framework/reference/core/beans/annotation-config/postconstruct-and-predestroy-annotations.html)
+- [Más información](https://www.baeldung.com/spring-postconstruct-predestroy)
+
+### @DependsOn (Class Level Annotation)
+
+Spring, by default, manages beans’ lifecycle and arranges their initialization order.
+
+But, we can still customize it based on our needs. We can choose either the SmartLifeCycle interface or the `@DependsOn` annotation for managing initialization order.
+
+We can use the `@DependsOn` annotation and its behavior in case of a missing bean or circular dependency. Or in case of simply needing one bean initialized before another.
+
+```java
+@Configuration
+@ComponentScan("com.baeldung.dependson")
+public class Config {
+ 
+    @Bean
+    @DependsOn({"fileReader","fileWriter"})
+    public FileProcessor fileProcessor(){
+        return new FileProcessor();
+    }
+    
+    @Bean("fileReader")
+    public FileReader fileReader() {
+        return new FileReader();
+    }
+    
+    @Bean("fileWriter")
+    public FileWriter fileWriter() {
+        return new FileWriter();
+    }   
+}
+```
+
+Using `@DependsOn` at the class level has no effect unless component-scanning is being used. If a DependsOn-annotated class is declared via XML, `@DependsOn` annotation metadata is ignored, and `<bean depends-on="..."/>` is respected instead.
+
+[Más información](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/DependsOn.html)
+
+### @Required (deprecated)
+
+The `@Required` annotation is method-level annotation. It applies to the **bean setter method**. It indicates that the annotated bean must be populated at configuration time with the required property, else it throws an exception `BeanInitilizationException`.
+
+```java
+public class Machine {  
+  private Integer cost;
+
+  @Required
+  public void setCost(Integer cost) {
+    this.cost = cost;  
+  }
+     
+  public Integer getCost() {
+    return cost;
+  }
+} 
+```
+
+## Spring Framework Stereotype Annotations
+
+### @Component (Class Level Annotation)
+
+It is a class-level annotation. It is used to mark a Java class as a bean. A Java class annotated with `@Component` is found during the classpath. The Spring Framework pick it up and configure it in the application context as a Spring Bean.
+
+`@Component` is a **generic** stereotype for any Spring-managed component. `@Repository`, `@Service`, and `@Controller` are specializations of `@Component` for more specific use cases, for example, in the persistence, service, and presentation layers, respectively.
+
+![Diagram](https://www.techferry.com/articles/images/SpringComponentAnnotations.jpg)
+
+```java
+@Component
+public class ContactResource {
+  //...
+}
+```
+
+### @Controller (Class Level Annotation)
+
+The `@Controller` annotation is used to indicate the class is a Spring controller. This annotation is simply a specialization of the `@Component` class and allows implementation classes to be auto-detected through the class path scanning.
 
 ```java
 @Controller
@@ -106,7 +223,45 @@ public class BrandsController{
 }
 ```
 
-### @RequestMapping
+### @Service (Class Level Annotation)
+
+`@Service` marks a Java class that performs some service, such as executing business logic, performing calculations, and calling external APIs. This annotation is a specialized form of the `@Component` annotation intended to be used in the service layer.
+
+```java
+@Service
+public class TestService{
+   public void service1(){
+      //business code
+   }
+}
+```
+
+### @Repository (Class Level Annotation)
+
+This annotation is used on Java classes that directly access the database. The `@Repository` annotation works as a marker for any class that fulfills the role of repository or Data Access Object.
+
+This annotation has an automatic translation feature. For example, when an exception occurs in the `@Repository`, there is a handler for that exception and there is no need to add a try-catch block.
+
+This annotation is a specialized form of the `@Component` annotation.
+
+```java
+@Repository
+public class TestRepo{
+   public void add(){
+      System.out.println("Added");
+   }
+}
+```
+
+## Spring Boot Annotations
+
+### @EnableAutoConfiguration (Class Level Annotation)
+
+### @SpringBootApplication (Class Level Annotation)
+
+## Spring MVC and REST Annotations
+
+### @RequestMapping (Method Level Annotation)
 
 - Method Level Annotation
 - It is used to map the HTTP request with specific method.
@@ -122,7 +277,7 @@ public class BrandsController{
 }
 ```
 
-### @GetMapping
+### @GetMapping (Method Level Annotation)
 
 - Method Level Annotation
 - It is used to map the HTTP GET request with specific method.
@@ -136,7 +291,7 @@ public Employee getAll(){
 }
 ```
 
-### @PostMapping
+### @PostMapping (Method Level Annotation)
 
 - Method Level Annotation
 - It is used to map the HTTP POST request with specific method.
@@ -150,7 +305,7 @@ public void add(@RequestBody Brand brand){
 }
 ```
 
-### @PutMapping
+### @PutMapping (Method Level Annotation)
 
 - Method Level Annotation
 - It is used to map the HTTP PUT request with specific method.
@@ -163,7 +318,7 @@ public void update(@RequestBody Brand brand){
 }
 ```
 
-### @DeleteMapping
+### @DeleteMapping (Method Level Annotation)
 
 - Method Level Annotation
 - It is used to map the HTTP DELETE request with specific method.
@@ -176,18 +331,7 @@ public void delete(@RequestBody Brand brand){
 }
 ```
 
-### @PathVariable
-
-- Method Level Annotation
-- It is used to get the data from the URL.
-- It is the most suitable for RESTful web service that contains a path variable.
-
-```java
-@GetMapping("/getbyid/{id}")
-public Brand getById(@PathVariable int id){
-  return brandService.getById(id);
-}
-```
+### @PatchMapping
 
 ### @RequestBody
 
@@ -199,6 +343,21 @@ public Brand getById(@PathVariable int id){
 @PostMapping("/add")
 public void add(@RequestBody Brand brand){
   brandService.add(brand);
+}
+```
+
+### @ResponseBody
+
+### @PathVariable (Method Level Annotation)
+
+- Method Level Annotation
+- It is used to get the data from the URL.
+- It is the most suitable for RESTful web service that contains a path variable.
+
+```java
+@GetMapping("/getbyid/{id}")
+public Brand getById(@PathVariable int id){
+  return brandService.getById(id);
 }
 ```
 
@@ -215,7 +374,9 @@ public Brand getById(@RequestParam int id){
 }
 ```
 
-### @RestController
+### @RequestHeader
+
+### @RestController (Class Level Annotation)
 
 - Class Level Annotation
 - It is a marker interface.
@@ -237,13 +398,21 @@ public class BrandsController{
 }
 ```
 
+### @RequestAttribute
+
 ---
 
 ## Enlaces de interés
 
 - <https://spring.io/>
+- <https://docs.spring.io/spring-framework/reference/>
+- <https://spring.academy/>
+- <https://www.baeldung.com/tag/spring-core-basics>
 - <https://dev.to/burakboduroglu/spring-boot-cheat-sheet-460c>
 - <https://www.geeksforgeeks.org/spring-boot/>
+- <https://www.javatpoint.com/spring-boot-annotations>
+- <https://www.adevguide.com/all-spring-annotations-cheat-sheet>
+- <https://www.techferry.com/articles/spring-annotations.html>
 
 ## Licencia
 
