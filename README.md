@@ -259,6 +259,14 @@ public class TestRepo{
 
 ### @SpringBootApplication (Class Level Annotation)
 
+@SpringBootApplication is a convenience annotation that adds all of the following:
+
+- @Configuration: Tags the class as a source of bean definitions for the application context.
+
+- @EnableAutoConfiguration: Tells Spring Boot to start adding beans based on classpath settings, other beans, and various property settings. For example, if spring-webmvc is on the classpath, this annotation flags the application as a web application and activates key behaviors, such as setting up a DispatcherServlet.
+
+- @ComponentScan: Tells Spring to look for other components, configurations, and services in the com/example package, letting it find the controllers.
+
 ## Spring MVC and REST Annotations
 
 ### @RequestMapping (Method Level Annotation)
@@ -400,19 +408,29 @@ public class BrandsController{
 
 ### @RequestAttribute
 
----
+TODO
+
+## Configuración de Spring
+
+El contenedor de Spring se encarga de crear los beans de la aplicación y de coordinar la relación entre beans a través de la Inyección de Dependencias (DI).
+
+Spring ofrece tres mecanismos principales:
+
+- **Configuración explícita en XML**
+
+- **Configuración explícita en Java**
+
+- **Detección implícita y conexión automática de bean**
+
+La **detección implícita y conexión automática** es el método recomendable
+
+___
 
 ## Enlaces de interés
 
 - <https://spring.io/>
 - <https://docs.spring.io/spring-framework/reference/>
-- <https://spring.academy/>
-- <https://www.baeldung.com/tag/spring-core-basics>
-- <https://dev.to/burakboduroglu/spring-boot-cheat-sheet-460c>
-- <https://www.geeksforgeeks.org/spring-boot/>
-- <https://www.javatpoint.com/spring-boot-annotations>
-- <https://www.adevguide.com/all-spring-annotations-cheat-sheet>
-- <https://www.techferry.com/articles/spring-annotations.html>
+- <https://docs.spring.io/spring-boot/docs/current/reference/html>
 
 ## Licencia
 
