@@ -30,36 +30,140 @@ En resumen, Spring Boot es una extensión de Spring Framework diseñada para hac
 
 > Introducción generada por ChatGPT
 
-## Core Spring Framework Annotations
+## [Spring Core Annotations](https://www.baeldung.com/spring-core-annotations)
 
-### @Autowired (Field, Constructor and Method Level Annotation)
+### @Autowired
 
-- Field Level Annotation
-- It is used to inject the dependency.
-- It is used to inject the object.
-- It is used to inject the object reference.
-- Dependency Injection is a design pattern.
+La anotación `@Autowired` se utiliza para marcar una dependencia que el motor DI de Spring resolverá e inyectará. Esta anotación se puede usar con un **constructor**, un **método _'setter'_** o con un **campo**:
 
 ```java
-public class Brand{
-   private int id;
-   private String name;
+// Constructor injection
+class Car {
+  Engine engine;
 
-   @Autowired
-   public Brand(int id, String name){
-     this.id = id;
-     this.name = name;
-   }
+  @Autowired
+  Car(Engine engine) {
+    this.engine = engine;
+  }
 }
 ```
+
+A partir de la versión 4.3, no es necesario anotar constructores con `@Autowired` de forma explícita a menos que se haya declarado al menos dos constructores.
+
+```java
+// Setter injection
+class Car {
+  Engine engine;
+
+  @Autowired
+  void setEngine(Engine engine) {
+    this.engine = engine;
+  }
+}
+``
+
+```java`
+// Field injection
+class Car {
+  @Autowired
+  Engine engine;
+}
+```
+
+`@Autowired` tiene un argumento booleano llamado `required` con un valor predeterminado de `true`. Este argumento ajusta el comportamiento de Spring cuando no encuentra un bean adecuado para conectar. Cuando es verdadero, se lanzará una excepción; de lo contrario, no se conecta nada.
+
+Si se utiliza la inyección del constructor, todos los argumentos del constructor son obligatorios.
+
+[Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/beans/factory/annotation/Autowired.html)
+
+### @Bean
+
+TODO
+
+### @Qualifier
+
+TODO
+
+### @Value
+
+TODO
+
+### @DependsOn
+
+Spring, by default, manages beans’ lifecycle and arranges their initialization order.
+
+But, we can still customize it based on our needs. We can choose either the SmartLifeCycle interface or the `@DependsOn` annotation for managing initialization order.
+
+We can use the `@DependsOn` annotation and its behavior in case of a missing bean or circular dependency. Or in case of simply needing one bean initialized before another.
+
+```java
+@Configuration
+@ComponentScan("com.baeldung.dependson")
+public class Config {
+ 
+    @Bean
+    @DependsOn({"fileReader","fileWriter"})
+    public FileProcessor fileProcessor(){
+        return new FileProcessor();
+    }
+    
+    @Bean("fileReader")
+    public FileReader fileReader() {
+        return new FileReader();
+    }
+    
+    @Bean("fileWriter")
+    public FileWriter fileWriter() {
+        return new FileWriter();
+    }   
+}
+```
+
+Using `@DependsOn` at the class level has no effect unless component-scanning is being used. If a DependsOn-annotated class is declared via XML, `@DependsOn` annotation metadata is ignored, and `<bean depends-on="..."/>` is respected instead.
+
+[Más información](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/DependsOn.html)
+
+### @Lazy
+
+TODO
+
+### @Lookup
+
+TODO
+
+### @Primary
+
+TODO
+
+### @Scope
+
+TODO
+
+### @Profile
+
+TODO
+
+### @Import
+
+TODO
+
+### @ImportResource
+
+TODO
+
+### @PropertySource
+
+TODO
+
+### @PropertySources
+
+TODO
+
+---
 
 ### @Configuration (Class Level Annotation)
 
 ### @ComponentScan (Class Level Annotation)
-
-### @Bean (Method Level Annotation)
-
-### @Import (Class Level Annotation)
 
 ### @PostConstruct & @PreDestroy (Method Level Annotation)
 
@@ -136,41 +240,6 @@ Note that both the `@PostConstruct` and `@PreDestroy` annotations are part of Ja
 
 - [Más información](https://docs.spring.io/spring-framework/reference/core/beans/annotation-config/postconstruct-and-predestroy-annotations.html)
 - [Más información](https://www.baeldung.com/spring-postconstruct-predestroy)
-
-### @DependsOn (Class Level Annotation)
-
-Spring, by default, manages beans’ lifecycle and arranges their initialization order.
-
-But, we can still customize it based on our needs. We can choose either the SmartLifeCycle interface or the `@DependsOn` annotation for managing initialization order.
-
-We can use the `@DependsOn` annotation and its behavior in case of a missing bean or circular dependency. Or in case of simply needing one bean initialized before another.
-
-```java
-@Configuration
-@ComponentScan("com.baeldung.dependson")
-public class Config {
- 
-    @Bean
-    @DependsOn({"fileReader","fileWriter"})
-    public FileProcessor fileProcessor(){
-        return new FileProcessor();
-    }
-    
-    @Bean("fileReader")
-    public FileReader fileReader() {
-        return new FileReader();
-    }
-    
-    @Bean("fileWriter")
-    public FileWriter fileWriter() {
-        return new FileWriter();
-    }   
-}
-```
-
-Using `@DependsOn` at the class level has no effect unless component-scanning is being used. If a DependsOn-annotated class is declared via XML, `@DependsOn` annotation metadata is ignored, and `<bean depends-on="..."/>` is respected instead.
-
-[Más información](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/DependsOn.html)
 
 ### @Required (deprecated)
 
@@ -410,27 +479,14 @@ public class BrandsController{
 
 TODO
 
-## Configuración de Spring
-
-El contenedor de Spring se encarga de crear los beans de la aplicación y de coordinar la relación entre beans a través de la Inyección de Dependencias (DI).
-
-Spring ofrece tres mecanismos principales:
-
-- **Configuración explícita en XML**
-
-- **Configuración explícita en Java**
-
-- **Detección implícita y conexión automática de bean**
-
-La **detección implícita y conexión automática** es el método recomendable
-
-___
+---
 
 ## Enlaces de interés
 
 - <https://spring.io/>
 - <https://docs.spring.io/spring-framework/reference/>
 - <https://docs.spring.io/spring-boot/docs/current/reference/html>
+- <https://www.baeldung.com/spring-core-annotations>
 
 ## Licencia
 
