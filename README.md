@@ -2,14 +2,6 @@
 
 ... EN DESARROLLO ...
 
-<!-- markdownlint-disable MD033 -->
-<p align="center">
-  <a href="https://alxgcrz.com" target="_blank">
-    <img src="https://alxgcrz.com/assets/asset_02_v1.png" alt="En desarrollo" title="En desarrollo" width="40%">
-  </a>
-</p>
-<!-- markdownlint-enable MD033 -->
-
 ## Overview
 
 **Spring Framework** es un poderoso y ampliamente utilizado marco de desarrollo de software para aplicaciones empresariales en Java. Diseñado para simplificar y acelerar el desarrollo de aplicaciones, Spring ofrece un enfoque integral que abarca desde la configuración hasta la implementación, abordando varios aspectos del desarrollo de software como la inversión de control, la inyección de dependencias, la gestión de transacciones, la seguridad y mucho más.
@@ -78,7 +70,35 @@ Si se utiliza la inyección del constructor, todos los argumentos del constructo
 
 ### @Bean
 
-TODO
+La anotación `@Bean` marca un _'factory method'_ que crea una instancia de un _bean_ de Spring:
+
+```java
+@Configuration
+public class AppConfiguration {
+  @Bean
+  public Engine engine() {
+    return new Engine();
+  }
+}
+```
+
+**Spring llama a estos métodos** cuando se requiere una nueva instancia del tipo de retorno.
+
+El _bean_ resultante tiene el mismo nombre que el _'factory method'_. Si queremos nombrarlo de manera diferente, podemos hacerlo con el nombre o los argumentos de valor de esta anotación (el valor del argumento es un alias para el nombre del argumento):
+
+```java
+@Configuration
+public class AppConfiguration {
+  @Bean("engine")
+  public Engine getEngine() {
+    return new Engine();
+  }
+}
+```
+
+Hay que tener en cuenta que **todos los métodos anotados con `@Bean` deben estar en clases `@Configuration`**.
+
+[Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Bean.html)
 
 ### @Qualifier
 
@@ -487,6 +507,7 @@ TODO
 - <https://docs.spring.io/spring-framework/reference/>
 - <https://docs.spring.io/spring-boot/docs/current/reference/html>
 - <https://www.baeldung.com/spring-core-annotations>
+- <https://www.baeldung.com/spring-boot-start>
 
 ## Licencia
 
