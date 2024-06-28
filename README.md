@@ -26,7 +26,7 @@ En resumen, Spring Boot es una extensión de Spring Framework diseñada para hac
 
 ### @Autowired
 
-La anotación `@Autowired` se utiliza para marcar una dependencia que el motor DI de Spring resolverá e inyectará. Esta anotación se puede usar con un **constructor**, un **método _'setter'_** o con un **campo**:
+La anotación `@Autowired` se utiliza para marcar una dependencia que el motor DI de Spring resolverá e inyectará. Esta anotación se puede usar en un **constructor**, en un **método _'setter'_** o en un **campo**:
 
 ```java
 // Constructor injection
@@ -64,9 +64,13 @@ class Car {
 
 `@Autowired` tiene un argumento booleano llamado `required` con un valor predeterminado de `true`. Este argumento ajusta el comportamiento de Spring cuando no encuentra un bean adecuado para conectar. Cuando es verdadero, se lanzará una excepción; de lo contrario, no se conecta nada.
 
-Si se utiliza la inyección del constructor, todos los argumentos del constructor son obligatorios.
+Si se utiliza la inyección del constructor, **todos los argumentos del constructor son obligatorios**.
 
-[Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/beans/factory/annotation/Autowired.html)
+- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/beans/factory/annotation/Autowired.html)
+
+- [Guide to Spring @Autowired](https://www.baeldung.com/spring-autowire)
+
+- [Constructor Dependency Injection in Spring](https://www.baeldung.com/constructor-injection-in-spring)
 
 ### @Bean
 
@@ -84,7 +88,7 @@ public class AppConfiguration {
 
 **Spring llama a estos métodos** cuando se requiere una nueva instancia del tipo de retorno.
 
-El _bean_ resultante tiene el mismo nombre que el _'factory method'_. Si queremos nombrarlo de manera diferente, podemos hacerlo con el nombre o los argumentos de valor de esta anotación (el valor del argumento es un alias para el nombre del argumento):
+El bean resultante tiene el mismo nombre que el _'factory method'_. Si se requiere que tenga un nombre diferente, se puede hacer con el nombre o los argumentos de valor de esta anotación (el valor del argumento es un alias para el nombre del argumento):
 
 ```java
 @Configuration
@@ -102,70 +106,216 @@ Hay que tener en cuenta que **todos los métodos anotados con `@Bean` deben esta
 
 ### @Qualifier
 
-TODO
+Se usa la anotación `@Qualifier` junto con `@Autowired` para proporcionar la **identificación del bean** o el **nombre del bean** que se debe usar, sobretodo en situaciones ambiguas.
+
+```java
+class Bike implements Vehicle {}
+
+class Car implements Vehicle {}
+```
+
+En caso de ambigüedad, se utiliza `@Qualifier` para indicar a Spring **el bean a inyectar**:
+
+```java
+// Using constructor injection
+@Autowired
+Biker(@Qualifier("bike") Vehicle vehicle) {
+    this.vehicle = vehicle;
+}
+
+// Using setter injection
+@Autowired
+void setVehicle(@Qualifier("bike") Vehicle vehicle) {
+    this.vehicle = vehicle;
+}
+
+@Autowired
+@Qualifier("bike")
+void setVehicle(Vehicle vehicle) {
+    this.vehicle = vehicle;
+}
+
+// Using field injection
+@Autowired
+@Qualifier("bike")
+Vehicle vehicle;
+```
 
 ### @Value
 
-TODO
-
-### @DependsOn
-
-Spring, by default, manages beans’ lifecycle and arranges their initialization order.
-
-But, we can still customize it based on our needs. We can choose either the SmartLifeCycle interface or the `@DependsOn` annotation for managing initialization order.
-
-We can use the `@DependsOn` annotation and its behavior in case of a missing bean or circular dependency. Or in case of simply needing one bean initialized before another.
+Se puede utilizar la anotación `@Value` para inyectar valores de propiedad en beans. Es compatible con constructorres, métodos _'setter'_ y con campos.
 
 ```java
-@Configuration
-@ComponentScan("com.baeldung.dependson")
-public class Config {
- 
-    @Bean
-    @DependsOn({"fileReader","fileWriter"})
-    public FileProcessor fileProcessor(){
-        return new FileProcessor();
-    }
-    
-    @Bean("fileReader")
-    public FileReader fileReader() {
-        return new FileReader();
-    }
-    
-    @Bean("fileWriter")
-    public FileWriter fileWriter() {
-        return new FileWriter();
-    }   
+// Constructor injection
+Engine(@Value("8") int cylinderCount) {
+    this.cylinderCount = cylinderCount;
 }
 ```
 
-Using `@DependsOn` at the class level has no effect unless component-scanning is being used. If a DependsOn-annotated class is declared via XML, `@DependsOn` annotation metadata is ignored, and `<bean depends-on="..."/>` is respected instead.
+Por supuesto, inyectar valores estáticos no es útil. Por lo tanto, podemos usar **cadenas _'placeholder'_** en `@Value` para conectar valores definidos en fuentes externas, por ejemplo, en archivos _'.properties'_ o _'.yaml'_.
 
-[Más información](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/DependsOn.html)
+Por ejemplo, un valor en un fichero externo podría ser:
+
+```text
+engine.fuelType=petrol
+```
+
+Podemos inyectar el valor de esta forma:
+
+```java
+@Value("${engine.fuelType}")
+String fuelType;
+```
+
+- [A Quick Guide to Spring @Value](https://www.baeldung.com/spring-value-annotation)
+
+### @DependsOn
+
+La anotación `@DependsOn` se puede utilizar para hacer que Spring **inicialice otros beans antes del anotado**. Normalmente, este comportamiento es automático y se basa en las dependencias explícitas entre beans. Spring, de forma predeterminada, gestiona el ciclo de vida de los beans y organiza su orden de inicialización.
+
+Solo necesitamos esta anotación cuando **las dependencias están implícitas**, por ejemplo, carga del controlador JDBC o inicialización de variables estáticas.
+
+Podemos usar `@DependsOn` en la clase dependiente especificando los nombres de los beans de dependencia. El argumento de valor de la anotación necesita una matriz que contenga los nombres de los beans de dependencia:
+
+```java
+@DependsOn("engine")
+class Car implements Vehicle {}
+```
+
+Alternativamente, si se define un bean con la anotación `@Bean`, el _'factory method'_ debería anotarse con `@DependsOn`:
+
+```java
+@Bean
+@DependsOn("fuel")
+Engine engine() {
+    return new Engine();
+}
+```
+
+- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/DependsOn.html)
 
 ### @Lazy
 
-TODO
+La anotación `@Lazy` se utiliza cuando queremos inicializar un bean de forma diferida. De forma predeterminada, Spring crea todos los beans singleton al inicio/arranque del contexto de la aplicación.
+
+Sin embargo, hay casos en los que necesitamos crear un bean cuando se solicita solicitamos, no al iniciar la aplicación.
+
+Esta anotación tiene un argumento con el valor predeterminado de verdadero. Es útil para anular el comportamiento predeterminado.
+
+Por ejemplo, marcar beans para que se carguen inmediatamente cuando la configuración global es diferida, o configurar métodos específicos de `@Bean` para carga inmediata en una clase `@Configuration` marcada con @Lazy:
+
+```java
+@Configuration
+@Lazy
+class VehicleFactoryConfig {
+
+    @Bean
+    @Lazy(false)
+    Engine engine() {
+        return new Engine();
+    }
+}
+```
+
+- [A Quick Guide to the Spring @Lazy Annotation](https://www.baeldung.com/spring-lazy-annotation)
 
 ### @Lookup
 
-TODO
+Un método anotado con `@Lookup` le indica a Spring que devuelva una instancia del tipo de retorno del método cuando lo invoquemos.
+
+- [@Lookup Annotation in Spring](https://www.baeldung.com/spring-lookup)
 
 ### @Primary
 
-TODO
+A veces necesitamos definir **múltiples beans del mismo tipo**. En estos casos, la inyección no tendrá éxito porque Spring no sabe qué bean necesitamos.
+
+Ya vimos una opción para manejar este escenario: marcar todos los puntos de conexión con `@Qualifier` y especificar el nombre del bean requerido.
+
+Sin embargo, la mayoría de las veces necesitamos un bean específico y rara vez los otros. Podemos usar `@Primary` para simplificar este caso: si marcamos el bean usado más frecuentemente con `@Primary`, será elegido en los puntos de inyección no calificados:
+
+```java
+@Component
+@Primary
+class Car implements Vehicle {}
+
+@Component
+class Bike implements Vehicle {}
+
+@Component
+class Driver {
+    @Autowired
+    Vehicle vehicle;
+}
+
+@Component
+class Biker {
+    @Autowired
+    @Qualifier("bike")
+    Vehicle vehicle;
+}
+```
+
+En el ejemplo anterior, _'Car'_ es el vehículo principal. Por lo tanto, en la clase _'Driver'_, Spring inyecta un bean de tipo _'Car'_. Por supuesto, en el bean _'Biker'_, el valor del campo '_vehicle'_ será un objeto de tipo _'Bike'_ porque está calificado.
 
 ### @Scope
 
-TODO
+Usamos `@Scope` para definir el ámbito de una clase `@Component` o una definición de `@Bean`. Puede ser **_singleton_**, **_prototype_**, **_request_**, **_session_**, **_globalSession_** o algún ámbito personalizado.
+
+```java
+@Component
+@Scope("prototype")
+class Engine {}
+```
+
+**El ámbito por defecto es 'singleton'**. Esto significa que Spring crea una única instancia del bean y la reutiliza en toda la aplicación.
 
 ### @Profile
 
-TODO
+Si queremos que Spring use una clase `@Component` o un método `@Bean` solo cuando un perfil específico esté activo, podemos marcarlo con `@Profile`. Podemos configurar el nombre del perfil con el argumento de la anotación:
+
+```java
+@Component
+@Profile("sportDay")
+class Bike implements Vehicle {}
+```
+
+- [Spring Profiles](https://www.baeldung.com/spring-profiles)
 
 ### @Import
 
-TODO
+La anotación `@Import` en Spring se utiliza para importar configuraciones adicionales a una configuración principal de la aplicación.
+
+Si tenemos una clase anotada con `@Configuration` que define beans y configuraciones específicas para la aplicación, se puede usar `@Import` para incluir esta configuración en otra clase `@Configuration` principal:
+
+```java
+@Configuration
+@Import(MyAdditionalConfig.class)
+public class MainConfig {
+    // Configuración principal de la aplicación
+}
+```
+
+Otro uso de esta antoación es que podemos utilizar **clases específicas anotadas con `@Configuration` sin escaneo de componentes** con esta anotación. Podemos proporcionar esas clases con el argumento de la anotación. Esto es útil cuando se quiere tener control explícito sobre qué configuraciones y beans están disponibles en la aplicación:
+
+```java
+@Configuration
+@Import({DataSourceConfig.class, SecurityConfig.class})
+public class MainConfig {
+    // Configuración principal de la aplicación
+}
+```
+
+Por último, esta anotación sirve para importar clases no relacionadas con `@Configuration`, es decir, además de importar configuraciones de clases `@Configuration`, también se pueden importar otras clases que no estén anotadas con `@Configuration` pero que sean necesarios en la configuración principal.
+
+```java
+@Configuration
+@Import({MyUtilityClass.class, AnotherHelper.class})
+public class MainConfig {
+    // Configuración principal de la aplicación
+}
+```
+
+Aquí, _'MyUtilityClass'_ y _'AnotherHelper'_ son clases normales que no necesariamente son configuraciones de Spring.
 
 ### @ImportResource
 
