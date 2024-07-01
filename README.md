@@ -24,6 +24,8 @@ En resumen, Spring Boot es una extensión de Spring Framework diseñada para hac
 
 ## [Spring Core Annotations](https://www.baeldung.com/spring-core-annotations)
 
+Estas anotaciones forman parte del paquete [org.springframework.beans.factory.annotation](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/beans/factory/annotation/package-summary.html) y [org.springframework.context.annotation](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/package-summary.html).
+
 ### @Autowired
 
 La anotación `@Autowired` se utiliza para marcar una dependencia que el motor DI de Spring resolverá e inyectará. Esta anotación se puede usar en un **constructor**, en un **método _'setter'_** o en un **campo**:
@@ -102,7 +104,7 @@ public class AppConfiguration {
 
 Hay que tener en cuenta que **todos los métodos anotados con `@Bean` deben estar en clases `@Configuration`**.
 
-[Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Bean.html)
+- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Bean.html)
 
 ### @Qualifier
 
@@ -141,6 +143,8 @@ void setVehicle(Vehicle vehicle) {
 Vehicle vehicle;
 ```
 
+- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/beans/factory/annotation/Qualifier.html)
+
 ### @Value
 
 Se puede utilizar la anotación `@Value` para inyectar valores de propiedad en beans. Es compatible con constructorres, métodos _'setter'_ y con campos.
@@ -166,6 +170,8 @@ Podemos inyectar el valor de esta forma:
 @Value("${engine.fuelType}")
 String fuelType;
 ```
+
+- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/beans/factory/annotation/Value.html)
 
 - [A Quick Guide to Spring @Value](https://www.baeldung.com/spring-value-annotation)
 
@@ -217,11 +223,15 @@ class VehicleFactoryConfig {
 }
 ```
 
+- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Lazy.html)
+
 - [A Quick Guide to the Spring @Lazy Annotation](https://www.baeldung.com/spring-lazy-annotation)
 
 ### @Lookup
 
 Un método anotado con `@Lookup` le indica a Spring que devuelva una instancia del tipo de retorno del método cuando lo invoquemos.
+
+- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/beans/factory/annotation/Lookup.html)
 
 - [@Lookup Annotation in Spring](https://www.baeldung.com/spring-lookup)
 
@@ -257,6 +267,8 @@ class Biker {
 
 En el ejemplo anterior, _'Car'_ es el vehículo principal. Por lo tanto, en la clase _'Driver'_, Spring inyecta un bean de tipo _'Car'_. Por supuesto, en el bean _'Biker'_, el valor del campo '_vehicle'_ será un objeto de tipo _'Bike'_ porque está calificado.
 
+- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Primary.html)
+
 ### @Scope
 
 Usamos `@Scope` para definir el ámbito de una clase `@Component` o una definición de `@Bean`. Puede ser **_singleton_**, **_prototype_**, **_request_**, **_session_**, **_globalSession_** o algún ámbito personalizado.
@@ -269,6 +281,8 @@ class Engine {}
 
 **El ámbito por defecto es 'singleton'**. Esto significa que Spring crea una única instancia del bean y la reutiliza en toda la aplicación.
 
+- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Scope.html)
+
 ### @Profile
 
 Si queremos que Spring use una clase `@Component` o un método `@Bean` solo cuando un perfil específico esté activo, podemos marcarlo con `@Profile`. Podemos configurar el nombre del perfil con el argumento de la anotación:
@@ -278,6 +292,8 @@ Si queremos que Spring use una clase `@Component` o un método `@Bean` solo cuan
 @Profile("sportDay")
 class Bike implements Vehicle {}
 ```
+
+- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Profile.html)
 
 - [Spring Profiles](https://www.baeldung.com/spring-profiles)
 
@@ -317,337 +333,247 @@ public class MainConfig {
 
 Aquí, _'MyUtilityClass'_ y _'AnotherHelper'_ son clases normales que no necesariamente son configuraciones de Spring.
 
+- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Import.html)
+
 ### @ImportResource
 
-TODO
+Podemos importar configuraciones XML con esta anotación. Podemos especificar las ubicaciones de los archivos XML utilizando un argumento en la anotación:
+
+```java
+@Configuration
+@ImportResource("classpath:/annotations.xml")
+class VehicleFactoryConfig {}
+```
+
+La anotación `@ImportResource` se utiliza exclusivamente para importar configuraciones desde archivos XML dentro del contexto de Spring.
+
+En contraste, `@Import` se utiliza para importar configuraciones y componentes de otras clases de configuración, ya sean basadas en anotaciones o en XML, pero principalmente se usa con configuraciones basadas en anotaciones.
+
+- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/ImportResource.html)
 
 ### @PropertySource
 
-TODO
+Con esta anotación, podemos definir archivos de propiedades ('.properties' o '.yml') para la configuración de la aplicación:
+
+```java
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+
+@Configuration
+@PropertySource("classpath:config.properties")
+public class AppConfig {
+    // Configuración adicional de la aplicación
+}
+```
+
+Estos archivos contienen configuraciones como URLs de bases de datos, rutas de archivos, configuraciones de conexión, etc.
+
+Las propiedades cargadas se integran con el `Environment` de Spring, lo que permite acceder a ellas desde cualquier parte de la aplicación:
+
+```java
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Component;
+
+@Component
+public class MyComponent {
+
+    @Autowired
+    private Environment env;
+
+    public void someMethod() {
+        String dbUrl = env.getProperty("database.url");
+        // Utilizar la propiedad dbUrl...
+    }
+}
+```
+
+`@PropertySource` aprovecha la función de anotaciones repetidas de Java 8, lo que significa que podemos marcar una clase con ella varias veces:
+
+```java
+@Configuration
+@PropertySource("classpath:/annotations.properties")
+@PropertySource("classpath:/vehicle-factory.properties")
+class VehicleFactoryConfig {}
+```
+
+- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/PropertySource.html)
 
 ### @PropertySources
 
-TODO
+Podemos usar esta anotación para especificar múltiples configuraciones de `@PropertySource`:
+
+```java
+@Configuration
+@PropertySources({ 
+    @PropertySource("classpath:/annotations.properties"),
+    @PropertySource("classpath:/vehicle-factory.properties")
+})
+class VehicleFactoryConfig {}
+```
+
+Tenga en cuenta que desde Java 8 se puede lograr el mismo resultado con la función de anotaciones repetidas.
+
+- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/PropertySources.html)
 
 ---
 
-### @Configuration (Class Level Annotation)
+## [Spring Web Annotations](https://www.baeldung.com/spring-mvc-annotations)
 
-### @ComponentScan (Class Level Annotation)
+Estas anotaciones forman parte del paquete [org.springframework.web.bind.annotation](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/package-summary.html).
 
-### @PostConstruct & @PreDestroy (Method Level Annotation)
+### @RequestMapping
 
-Spring calls the methods annotated with `@PostConstruct` only once, just after the initialization of bean properties. Keep in mind that these methods will run even if there’s nothing to initialize.
+En pocas palabras, `@RequestMapping` marca métodos manejadores de peticiones dentro de clases anotadas con `@Controller`; puede configurarse utilizando:
 
-The method annotated with `@PostConstruct` can have any access level, but it can’t be static. Annotated methods can have any visibility but must take no parameters and only return void.
+- **path (o sus alias name y value)**: indica a qué URL está mapeado el método.
 
-One possible use of @PostConstruct is populating a database:
+- **method**: define los métodos HTTP compatibles.
+
+- **params**: filtra las peticiones basándose en la presencia, ausencia o valor de parámetros HTTP.
+
+- **headers**: filtra las peticiones basándose en la presencia, ausencia o valor de cabeceras HTTP.
+
+- **consumes**: especifica los tipos de medios que el método puede consumir en el cuerpo de la petición HTTP.
+
+- **produces**: especifica los tipos de medios que el método puede producir en el cuerpo de la respuesta HTTP.
 
 ```java
-@Component
-public class DbInit {
+@Controller
+class VehicleController {
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @PostConstruct
-    private void postConstruct() {
-        User admin = new User("admin", "admin password");
-        User normalUser = new User("user", "user password");
-        userRepository.save(admin, normalUser);
+    @RequestMapping(value = "/vehicles/home", method = RequestMethod.GET)
+    String home() {
+        return "home";
     }
 }
 ```
 
-A method annotated with `@PreDestroy` runs only once, just before Spring removes our bean from the application context.
+Podemos proporcionar configuraciones predeterminadas para todos los métodos manejadores en una clase `@Controller` si aplicamos esta anotación a nivel de **clase**. La única excepción es la URL, que Spring no sobrescribirá con configuraciones a nivel de método, sino que **anexará las dos partes del path**.
 
-Same as with @PostConstruct, the methods annotated with @PreDestroy can have any access level, but can’t be static.
+Por ejemplo, la siguiente configuración tiene el mismo efecto que la configuración del ejemplo anterior:
 
 ```java
-@Component
-public class UserRepository {
+@Controller
+@RequestMapping(value = "/vehicles", method = RequestMethod.GET)
+class VehicleController {
 
-    private DbConnection dbConnection;
-    @PreDestroy
-    public void preDestroy() {
-        dbConnection.close();
+    @RequestMapping("/home")
+    String home() {
+        return "home";
     }
 }
 ```
 
-NOTE: PreDestroy methods called if application shuts down normally. Not if the process dies or is killed.
+Además, `@GetMapping`, `@PostMapping`, `@PutMapping`, `@DeleteMapping` y `@PatchMapping` son variantes de `@RequestMapping` donde el método HTTP ya está configurado específicamente como GET, POST, PUT, DELETE y PATCH respectivamente.
 
-```java
-ConfigurableApplicationContext context = SpringApplication.run(...);
+Estas anotaciones están disponibles desde la **versión 4.3 de Spring**.
 
-// Trigger call of all @PreDestroy annotated methods
-context.close();
-```
-
-Alternatively, `@Bean` has options to define these life-cycle methods:
-
-```java
-@Bean(initMethod="populateCache", destroyMethod="flushCache")
-public AccountRepository accountRepository () {
-  //...
-}
-```
-
-So, which scheme to use?
-
-- Use `@PostConstruct` and/or `@PreDestroy` for your own classes
-- Use Lifecycle Method attributes of `@Bean` annotation for classes you didn't write and can't annotate, like third-party libraries.
-
-Note that both the `@PostConstruct` and `@PreDestroy` annotations are part of Java EE. Since Java EE was deprecated in Java 9, and removed in Java 11, we have to add an additional dependency to use these annotations:
-
-```java
-<dependency>
-    <groupId>javax.annotation</groupId>
-    <artifactId>javax.annotation-api</artifactId>
-    <version>1.3.2</version>
-</dependency>
-```
-
-- [Más información](https://docs.spring.io/spring-framework/reference/core/beans/annotation-config/postconstruct-and-predestroy-annotations.html)
-- [Más información](https://www.baeldung.com/spring-postconstruct-predestroy)
-
-### @Required (deprecated)
-
-The `@Required` annotation is method-level annotation. It applies to the **bean setter method**. It indicates that the annotated bean must be populated at configuration time with the required property, else it throws an exception `BeanInitilizationException`.
-
-```java
-public class Machine {  
-  private Integer cost;
-
-  @Required
-  public void setCost(Integer cost) {
-    this.cost = cost;  
-  }
-     
-  public Integer getCost() {
-    return cost;
-  }
-} 
-```
-
-## Spring Framework Stereotype Annotations
-
-### @Component (Class Level Annotation)
-
-It is a class-level annotation. It is used to mark a Java class as a bean. A Java class annotated with `@Component` is found during the classpath. The Spring Framework pick it up and configure it in the application context as a Spring Bean.
-
-`@Component` is a **generic** stereotype for any Spring-managed component. `@Repository`, `@Service`, and `@Controller` are specializations of `@Component` for more specific use cases, for example, in the persistence, service, and presentation layers, respectively.
-
-![Diagram](https://www.techferry.com/articles/images/SpringComponentAnnotations.jpg)
-
-```java
-@Component
-public class ContactResource {
-  //...
-}
-```
-
-### @Controller (Class Level Annotation)
-
-The `@Controller` annotation is used to indicate the class is a Spring controller. This annotation is simply a specialization of the `@Component` class and allows implementation classes to be auto-detected through the class path scanning.
-
-```java
-@Controller
-@RequestMapping("/api/brands")
-public class BrandsController{
-   @GetMapping("/getall")
-   public Employee getAll(){
-       return brandService.getAll();
-   }
-}
-```
-
-### @Service (Class Level Annotation)
-
-`@Service` marks a Java class that performs some service, such as executing business logic, performing calculations, and calling external APIs. This annotation is a specialized form of the `@Component` annotation intended to be used in the service layer.
-
-```java
-@Service
-public class TestService{
-   public void service1(){
-      //business code
-   }
-}
-```
-
-### @Repository (Class Level Annotation)
-
-This annotation is used on Java classes that directly access the database. The `@Repository` annotation works as a marker for any class that fulfills the role of repository or Data Access Object.
-
-This annotation has an automatic translation feature. For example, when an exception occurs in the `@Repository`, there is a handler for that exception and there is no need to add a try-catch block.
-
-This annotation is a specialized form of the `@Component` annotation.
-
-```java
-@Repository
-public class TestRepo{
-   public void add(){
-      System.out.println("Added");
-   }
-}
-```
-
-## Spring Boot Annotations
-
-### @EnableAutoConfiguration (Class Level Annotation)
-
-### @SpringBootApplication (Class Level Annotation)
-
-@SpringBootApplication is a convenience annotation that adds all of the following:
-
-- @Configuration: Tags the class as a source of bean definitions for the application context.
-
-- @EnableAutoConfiguration: Tells Spring Boot to start adding beans based on classpath settings, other beans, and various property settings. For example, if spring-webmvc is on the classpath, this annotation flags the application as a web application and activates key behaviors, such as setting up a DispatcherServlet.
-
-- @ComponentScan: Tells Spring to look for other components, configurations, and services in the com/example package, letting it find the controllers.
-
-## Spring MVC and REST Annotations
-
-### @RequestMapping (Method Level Annotation)
-
-- Method Level Annotation
-- It is used to map the HTTP request with specific method.
-
-```java
-@Controller
-@RequestMapping("/api/brands")
-public class BrandsController{
-   @GetMapping("/getall")
-   public Employee getAll(){
-       return brandService.getAll();
-   }
-}
-```
-
-### @GetMapping (Method Level Annotation)
-
-- Method Level Annotation
-- It is used to map the HTTP GET request with specific method.
-- It is used to get the data.
-- It is used to read the data.
-
-```java
-@GetMapping("/getall")
-public Employee getAll(){
-  return brandService.getAll();
-}
-```
-
-### @PostMapping (Method Level Annotation)
-
-- Method Level Annotation
-- It is used to map the HTTP POST request with specific method.
-- It is used to add the data.
-- It is used to create the data.
-
-```java
-@PostMapping("/add")
-public void add(@RequestBody Brand brand){
-  brandService.add(brand);
-}
-```
-
-### @PutMapping (Method Level Annotation)
-
-- Method Level Annotation
-- It is used to map the HTTP PUT request with specific method.
-- It is used to update the data.
-
-```java
-@PutMapping("/update")
-public void update(@RequestBody Brand brand){
-  brandService.update(brand);
-}
-```
-
-### @DeleteMapping (Method Level Annotation)
-
-- Method Level Annotation
-- It is used to map the HTTP DELETE request with specific method.
-- It is used to delete the data.
-
-```java
-@DeleteMapping("/delete")
-public void delete(@RequestBody Brand brand){
-  brandService.delete(brand);
-}
-```
-
-### @PatchMapping
+- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/RequestMapping.html)
 
 ### @RequestBody
 
-- It is used to get the data from the request body.
-- It is used to get the data from the HTTP request.
-- It is used to get the data from the HTTP request body.
+La anotación `@RequestBody` mapea el cuerpo de la solicitud HTTP a un objeto:
 
 ```java
-@PostMapping("/add")
-public void add(@RequestBody Brand brand){
-  brandService.add(brand);
+@PostMapping("/save")
+void saveVehicle(@RequestBody Vehicle vehicle) {
+    // ...
 }
 ```
 
-### @ResponseBody
+La deserialización es automática y depende del tipo de contenido de la solicitud.
 
-### @PathVariable (Method Level Annotation)
+- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/RequestBody.html)
 
-- Method Level Annotation
-- It is used to get the data from the URL.
-- It is the most suitable for RESTful web service that contains a path variable.
+### @PathVariable
+
+Esta anotación indica que un argumento de método está vinculado a una variable de plantilla URI. Si el nombre de la parte en la plantilla coincide con el nombre del argumento del método, no es necesario especificarlo en la anotación:
 
 ```java
-@GetMapping("/getbyid/{id}")
-public Brand getById(@PathVariable int id){
-  return brandService.getById(id);
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/users")
+public class UserController {
+
+    @GetMapping("/{userId}")
+    public String getUserById(@PathVariable Long userId) {
+        return "Obteniendo usuario con ID: " + userId;
+    }
 }
 ```
+
+Sin embargo, se puede vincular un argumento (o varios argumentos) de método a una de las partes de la plantilla con `@PathVariable` si se indica como argumento de la anotación.
+
+```java
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/products")
+public class ProductController {
+
+    @GetMapping("/{category}/{productId}")
+    public String getProductDetails(
+            @PathVariable("category") String category,
+            @PathVariable("productId") Long productId) {
+        return "Detalles del producto: categoría = " + category + ", ID = " + productId;
+    }
+}
+```
+
+Además, se puede marcar una variable de ruta como opcional estableciendo el argumento `required = false`:
+
+```java
+@RequestMapping("/{id}")
+Vehicle getVehicle(@PathVariable(required = false) long id) {
+    // ...
+}
+```
+
+- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/PathVariable.html)
 
 ### @RequestParam
 
-- It is used to get the data from the URL.
-- It is used to get the data from the URL query parameters.
-- It is also known as query parameter.
+TODO
 
-```java
-@GetMapping("/getbyid")
-public Brand getById(@RequestParam int id){
-    return brandService.getById(id);
-}
-```
+- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/RequestParam.html)
 
-### @RequestHeader
-
-### @RestController (Class Level Annotation)
-
-- Class Level Annotation
-- It is a marker interface.
-- It is a controller layer.
-- It is used to create a controller layer.
-- It use with @RequestMapping annotation.
-- It is a combination of @Controller and @ResponseBody annotations.
-- @RestController annotation is explained with @ResponseBody annotation.
-- @ResponseBody eliminates the need to add a comment to every method.
-
-```java
-@RestController
-@RequestMapping("/api/brands")
-public class BrandsController{
-   @GetMapping("/getall")
-   public Employee getAll(){
-       return brandService.getAll();
-   }
-}
-```
-
-### @RequestAttribute
+### @ResponseBody
 
 TODO
+
+- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/ResponseBody.html)
+
+### @ExceptionHandler
+
+TODO
+
+- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/ExceptionHandler.html)
+
+### @ResponseStatus
+
+TODO
+
+- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/ResponseStatus.html)
+
+### @RestController
+
+TODO
+
+- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/RestController.html)
+
+### @ModelAttribute
+
+TODO
+
+- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/ModelAttribute.html)
+
+### @CrossOrigin
+
+TODO
+
+- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/CrossOrigin.html)
 
 ---
 
