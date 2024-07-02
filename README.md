@@ -422,6 +422,8 @@ Tenga en cuenta que desde Java 8 se puede lograr el mismo resultado con la funci
 
 Estas anotaciones forman parte del paquete [org.springframework.web.bind.annotation](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/package-summary.html).
 
+- [Spring Web MVC](https://docs.spring.io/spring-framework/reference/web/webmvc.html)
+
 ### @RequestMapping
 
 En pocas palabras, `@RequestMapping` marca métodos manejadores de peticiones dentro de clases anotadas con `@Controller`; puede configurarse utilizando:
@@ -471,6 +473,8 @@ Estas anotaciones están disponibles desde la **versión 4.3 de Spring**.
 
 - [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/RequestMapping.html)
 
+- [Mapping Requests](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-requestmapping.html)
+
 ### @RequestBody
 
 La anotación `@RequestBody` mapea el cuerpo de la solicitud HTTP a un objeto:
@@ -493,6 +497,7 @@ Esta anotación indica que un argumento de método está vinculado a una variabl
 ```java
 import org.springframework.web.bind.annotation.*;
 
+// "http://example.com/users/{userId}"
 @RestController
 @RequestMapping("/users")
 public class UserController {
@@ -509,6 +514,7 @@ Sin embargo, se puede vincular un argumento (o varios argumentos) de método a u
 ```java
 import org.springframework.web.bind.annotation.*;
 
+// "http://example.com/products/{category}/{productId}"
 @RestController
 @RequestMapping("/products")
 public class ProductController {
@@ -535,31 +541,151 @@ Vehicle getVehicle(@PathVariable(required = false) long id) {
 
 ### @RequestParam
 
-TODO
+Se utilizas `@RequestParam` para acceder a los parámetros de solicitud HTTP:
+
+```java
+// "http://example.com/users?id=123"
+@GetMapping("/users")
+public String getUser(@RequestParam String id) {
+    // El valor de id será "123"
+    return "User ID: " + id;
+}
+```
+
+Tiene las mismas opciones de configuración que la anotación `@PathVariable`.
+
+Además de esas configuraciones, con `@RequestParam` podemos especificar un valor inyectado cuando Spring no encuentra ningún valor o está vacío en la solicitud. Para lograr esto, tenemos que establecer el argumento _"defaultValue"_:
+
+```java
+@RequestMapping("/buy")
+Car buyCar(@RequestParam(defaultValue = "5") int seatCount) {
+    // ...
+}
+```
 
 - [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/RequestParam.html)
 
+- [@RequestParam](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/requestparam.html)
+
 ### @ResponseBody
 
-TODO
+Si marcamos un método de controlador de solicitudes con `@ResponseBody`, Spring trata el resultado del método como la respuesta misma.
+
+Es decir, cuando un método de controlador anotado con `@ResponseBody` se invoca y retorna un objeto, Spring convierte automáticamente ese objeto en un formato específico para la respuesta HTTP. La conversión del objeto a formato se realiza a través de un convertidor de medios (media converter), que depende de la configuración de Spring y de las bibliotecas disponibles en el classpath.
+
+Es útil cuando se está construyendo una API RESTful y se desea retornar objetos como JSON o XML en lugar de vistas HTML.
+
+```java
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class ExampleController {
+
+    @GetMapping("/hello")
+    @ResponseBody
+    public String helloWorld() {
+        return "Hello, World!";
+    }
+
+    @GetMapping("/user")
+    @ResponseBody
+    public User getUser(@RequestParam String username) {
+        // Supongamos que aquí se obtiene un usuario de una base de datos
+        User user = userRepository.findByUsername(username);
+        return user;
+    }
+}
+```
+
+Si anotamos una clase @Controller con esta anotación, todos los métodos del controlador de solicitudes la usarán. Este es el efecto de `@RestController`, que no es más que una metaanotación marcada con `@Controller` y `@ResponseBody`
 
 - [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/ResponseBody.html)
 
+- [@ResponseBody](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/responsebody.html)
+
 ### @ExceptionHandler
 
-TODO
+Con esta anotación, podemos declarar un método de manejo de errores personalizado. Spring llama a este método cuando un método de controlador de solicitudes genera cualquiera de las excepciones especificadas.
+
+La excepción detectada se puede pasar al método como argumento:
+
+```java
+@ExceptionHandler(IllegalArgumentException.class)
+void onIllegalArgumentException(IllegalArgumentException exception) {
+    // ...
+}
+```
 
 - [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/ExceptionHandler.html)
 
+- [Exceptions](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-exceptionhandler.html)
+
 ### @ResponseStatus
 
-TODO
+Podemos especificar el código de estado HTTP deseado de la respuesta si anotamos un método manejador de solicitud con esta anotación. Podemos declarar el código de estado con el argumento `code`, o su alias, el argumento `value`.
+
+```java
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class ExampleController {
+
+    @GetMapping("/hello")
+    @ResponseStatus(HttpStatus.OK)
+    public String helloWorld() {
+        return "Hello, World!";
+    }
+}
+```
+
+Además, podemos proporcionar un motivo utilizando el argumento `reason`:
+
+```java
+@GetMapping("/notfound")
+@ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Resource not found")
+public void resourceNotFound() {
+    // Method body
+}
+```
+
+También podemos usarlo junto con `@ExceptionHandler`:
+
+```java
+@ExceptionHandler(IllegalArgumentException.class)
+@ResponseStatus(HttpStatus.BAD_REQUEST)
+void onIllegalArgumentException(IllegalArgumentException exception) {
+    // ...
+}
+```
 
 - [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/ResponseStatus.html)
 
+- [Returning Custom Status Codes from Spring Controllers](https://www.baeldung.com/spring-mvc-controller-custom-http-status-code)
+
 ### @RestController
 
-TODO
+La anotación `@RestController` es una meta-anotación que combina las anotaciones `@Controller`  y `@ResponseBody`.
+
+```java
+@Controller
+@ResponseBody
+class VehicleRestController {
+    // ...
+}
+```
+
+```java
+@RestController
+class VehicleRestController {
+    // ...
+}
+```
 
 - [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/RestController.html)
 
@@ -569,15 +695,35 @@ TODO
 
 - [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/ModelAttribute.html)
 
+- [@ModelAttribute](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/modelattrib-method-args.html)
+
+- [Model](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-modelattrib-methods.html)
+
 ### @CrossOrigin
 
 TODO
 
 - [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/CrossOrigin.html)
 
+### @CookieValue
+
+TODO
+
+- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/CookieValue.html)
+
+- [@CookieValue](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/cookievalue.html)
+
+### @RequestHeader
+
+TODO
+
+- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/RequestHeader.html)
+
+- [@RequestHeader](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/requestheader.html)
+
 ---
 
-## Enlaces de interés
+## Referencias
 
 - <https://spring.io/>
 - <https://docs.spring.io/spring-framework/reference/>
