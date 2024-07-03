@@ -691,9 +691,97 @@ class VehicleRestController {
 
 ### @ModelAttribute
 
-TODO
+La anotación `@ModelAttribute` en Spring MVC es utilizada para enlazar un método o parámetro de método a un atributo de modelo. Esta anotación es útil en el contexto de controladores de Spring MVC, donde se manejan las solicitudes HTTP y se prepara la respuesta.
+
+Cuando se usa `@ModelAttribute` en un **parámetro de método**, Spring intenta enlazar los datos de la solicitud HTTP a ese objeto. Es útil para la recepción de datos del formulario o de la solicitud HTTP.
+
+Con esta anotación podemos acceder a elementos que ya están en el modelo de un controlador MVC:
+
+```java
+// Se indica la clave del modelo en la anotación '@ModelAttribute'
+@PostMapping("/assemble")
+void assembleVehicle(@ModelAttribute("vehicle") Vehicle vehicleInModel) {
+    // ...
+}
+
+// El nombre del argumento del método coincide con la clave del modelo
+@PostMapping("/paint")
+void paintVehicle(@ModelAttribute Vehicle vehicle) {
+    // ...
+}
+```
+
+Cuando se anota un método de un controlador con `@ModelAttribute`, ese método se invoca antes de que cualquier método anotado con `@RequestMapping` dentro del mismo controlador se ejecute. Esto permite preparar y agregar atributos al modelo que se utilizarán en la vista.
+
+Spring agregará automáticamente el valor de retorno del método al modelo:
+
+```java
+// Se indica la clave del modelo en la anotación '@ModelAttribute'
+@ModelAttribute("vehicle")
+Vehicle getVehicle() {
+    // ...
+}
+
+// El nombre del método coincide con la clave del modelo
+@ModelAttribute
+Vehicle vehicle() {
+    // ...
+}
+```
+
+En Spring MVC, para procesar correctamente los datos enviados desde un formulario HTML o una solicitud HTTP POST, es **esencial enlazar** esos datos a un objeto del modelo utilizando @ModelAttribute. Si no se realiza este enlace explícitamente, Spring no podrá asignar los datos del formulario a ningún objeto y, por lo tanto, no estarán disponibles para su uso en el controlador.
+
+Al usar `@ModelAttribute`, Spring realiza automáticamente el enlace de datos entre los parámetros de solicitud y el objeto del modelo definido. Esto incluye la conversión de tipos de datos y la validación de los campos según las anotaciones de validación de Spring, como `@NotNull`, `@Size`, etc.
+
+En el siguiente ejemplo, se muestra un formulario en Spring:
+
+```html
+<form:form method="POST" action="/spring-mvc-basics/addEmployee" 
+  modelAttribute="employee">
+    <form:label path="name">Name</form:label>
+    <form:input path="name" />
+    
+    <form:label path="id">Id</form:label>
+    <form:input path="id" />
+    
+    <input type="submit" value="Submit" />
+</form:form>
+```
+
+En el controlador, se redirige a una vista JSP pero antes, se recuperan los datos enviados desde el formulario y se añaden al modelo:
+
+```java
+@Controller
+@ControllerAdvice
+public class EmployeeController {
+
+    private Map<Long, Employee> employeeMap = new HashMap<>();
+
+    @RequestMapping(value = "/addEmployee", method = RequestMethod.POST)
+    public String submit(
+      @ModelAttribute("employee") Employee employee,
+      BindingResult result, ModelMap model) {
+        if (result.hasErrors()) {
+            return "error";
+        }
+        model.addAttribute("name", employee.getName());
+        model.addAttribute("id", employee.getId());
+
+        employeeMap.put(employee.getId(), employee);
+
+        return "employeeView";
+    }
+
+    @ModelAttribute
+    public void addAttributes(Model model) {
+        model.addAttribute("msg", "Welcome to the Netherlands!");
+    }
+}
+```
 
 - [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/ModelAttribute.html)
+
+- [Spring MVC and the @ModelAttribute Annotation](https://www.baeldung.com/spring-mvc-and-the-modelattribute-annotation)
 
 - [@ModelAttribute](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/modelattrib-method-args.html)
 
@@ -701,13 +789,83 @@ TODO
 
 ### @CrossOrigin
 
-TODO
+La anotación `@CrossOrigin` en Spring Framework es utilizada para configurar las políticas de intercambio de recursos entre diferentes dominios (CORS, por sus siglas en inglés - _"Cross-Origin Resource Sharing"_). CORS es un mecanismo de seguridad implementado por los navegadores web para restringir las solicitudes HTTP que se originan desde un dominio diferente al del servidor de destino.
+
+La anotación `@CrossOrigin` habilita la comunicación entre dominios para los métodos del controlador de solicitudes anotados:
+
+```java
+@RestController
+@RequestMapping("/api")
+public class MyController {
+
+    @CrossOrigin(origins = "http://allowed-origin.com", methods = {RequestMethod.GET, RequestMethod.POST})
+    @GetMapping("/data")
+    public ResponseEntity<String> getData() {
+        // Lógica para obtener datos
+        return ResponseEntity.ok("Data fetched successfully");
+    }
+}
+```
+
+Si marcamos una clase con él, se aplica a todos los métodos del controlador de solicitudes que contiene. Podemos ajustar el comportamiento de CORS con los argumentos de esta anotación.
+
+Se puede habilitar CORS globalmente para todos los controladores usando una clase de configuración como esta:
+
+```java
+@Configuration
+public class CorsConfig implements WebMvcConfigurer {
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOrigins("http://domain1.com", "https://domain2.com")
+                .allowedMethods("GET", "POST", "PUT", "DELETE")
+                .allowedHeaders("header1", "header2")
+                .exposedHeaders("header3", "header4")
+                .allowCredentials(true)
+                .maxAge(3600);
+    }
+}
+```
+
+Si se utiliza Spring Security en la aplicación, hay que asegurarse de que la configuración de CORS no entre en conflicto con las políticas de seguridad definidas en Spring Security.
 
 - [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/CrossOrigin.html)
 
+- [CORS with Spring](https://www.baeldung.com/spring-cors)
+
+- [CORS](https://docs.spring.io/spring-framework/reference/web/webmvc-cors.html)
+
 ### @CookieValue
 
-TODO
+La anotación `@CookieValue` en Spring Framework se utiliza para enlazar el valor de una cookie HTTP específica a un parámetro de método en un controlador de Spring MVC. Esto es útil cuando se necesita acceder al valor de una cookie específica enviada por el cliente en una solicitud HTTP.
+
+```java
+@RestController
+@RequestMapping("/api")
+public class MyController {
+
+    @GetMapping("/getCookie")
+    public ResponseEntity<String> getCookieValue(@CookieValue(name = "myCookie", defaultValue = "default") String cookieValue) {
+        // Aquí puedes usar cookieValue, que contendrá el valor de la cookie "myCookie"
+        return ResponseEntity.ok("Value of 'myCookie': " + cookieValue);
+    }
+}
+```
+
+Por defecto, se requiere la presencia de la cookie. En caso contrario se lanza la excepción `MissingCookieValueException`. Se puede indicar que no es requerida con el argumento `required=false` en la anotación.
+
+Se puedes usar `@CookieValue` varias veces en un método de controlador para recuperar múltiples valores de cookies:
+
+```java
+@GetMapping("/getCookies")
+public ResponseEntity<String> getCookies(@CookieValue(name = "cookie1", defaultValue = "default1") String cookie1,
+                                        @CookieValue(name = "cookie2", defaultValue = "default2") String cookie2) {
+    // Aquí puedes usar cookie1 y cookie2, que contendrán los valores de las cookies "cookie1" y "cookie2" respectivamente
+    return ResponseEntity.ok("Value of 'cookie1': " + cookie1 + ", Value of 'cookie2': " + cookie2);
+}
+
+```
 
 - [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/CookieValue.html)
 
@@ -715,11 +873,118 @@ TODO
 
 ### @RequestHeader
 
-TODO
+La anotación `@RequestHeader` en Spring Framework se utiliza para enlazar el valor de una cabecera HTTP específica a un parámetro de método en un controlador de Spring MVC. Esto es útil cuando necesitas acceder a valores específicos de las cabeceras HTTP enviadas por el cliente en una solicitud.
+
+```java
+@RestController
+@RequestMapping("/api")
+public class MyController {
+
+    @GetMapping("/getUserAgent")
+    public ResponseEntity<String> getUserAgent(@RequestHeader("User-Agent") String userAgent) {
+        // Aquí puedes usar userAgent, que contendrá el valor de la cabecera "User-Agent"
+        return ResponseEntity.ok("User-Agent header value: " + userAgent);
+    }
+}
+```
+
+Por defecto, se requiere la presencia de la cabecera, lo que significa que Spring espera encontrar la cabecera especificada. Si no se encuentra, se generará una excepción `MissingRequestHeaderException` a menos que se especifique un valor predeterminado a falso.
 
 - [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/RequestHeader.html)
 
 - [@RequestHeader](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/requestheader.html)
+
+## [Spring Boot Annotations](https://www.baeldung.com/spring-boot-annotations)
+
+Spring Boot facilita la configuración de Spring con su función de configuración automática.
+
+Estas anotaciones forman parte del paquete [org.springframework.boot.autoconfigure](https://docs.spring.io/spring-boot/api/java/org/springframework/boot/autoconfigure/package-summary.html) y [org.springframework.boot.autoconfigure.condition](https://docs.spring.io/spring-boot/api/java/org/springframework/boot/autoconfigure/condition/package-summary.html).
+
+### @SpringBootApplication
+
+Esta anotación se utiliza para marcar la clase principal de una aplicación Spring Boot:
+
+```java
+@SpringBootApplication
+class VehicleFactoryApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(VehicleFactoryApplication.class, args);
+    }
+}
+```
+
+Esta anotación es una meta-anotación de las anotaciones `@Configuration`, `@EnableAutoConfiguration` y `@ComponentScan` con sus atributos predeterminados.
+
+- [Javadoc](https://docs.spring.io/spring-boot/api/java/org/springframework/boot/autoconfigure/SpringBootApplication.html)
+
+- [SpringApplication](https://docs.spring.io/spring-boot/reference/features/spring-application.html)
+
+### @EnableAutoConfiguration
+
+Esta anotación `@EnableAutoConfiguration`, como su nombre indica, permite la configuración automática. Significa que Spring Boot busca beans de configuración automática en su classpath y los aplica automáticamente.
+
+Hay que tener en cuenta que hay que usar esta anotación con `@Configuration`:
+
+```java
+@Configuration
+@EnableAutoConfiguration
+class VehicleFactoryConfig {}
+```
+
+- [Javadoc](https://docs.spring.io/spring-boot/api/java/org/springframework/boot/autoconfigure/EnableAutoConfiguration.html)
+
+### Auto-Configuration Conditions
+
+En el contexto de Spring Framework, las condiciones de auto-configuración (`@Conditional`) permiten condicionar la aplicación de configuraciones basadas en ciertas condiciones en tiempo de ejecución.
+
+Estas condiciones se utilizan ampliamente en la auto-configuración automática de Spring Boot y en la configuración personalizada de aplicaciones Spring ya que permiten una configuración modular y flexible de aplicaciones Spring, adaptándose dinámicamente según el entorno y las condiciones del sistema.
+
+Spring proporciona diversas condiciones predefinidas que listas para utilizar.
+
+Estas anotaciones de configuración se pueden colocar en clases `@Configuration` o métodos `@Bean`.
+
+- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Conditional.html)
+
+- [Create a Custom Auto-Configuration with Spring Boot](https://www.baeldung.com/spring-boot-custom-auto-configuration)
+
+- [Creating Your Own Auto-configuration](https://docs.spring.io/spring-boot/reference/features/developing-auto-configuration.html)
+
+#### @Conditional
+
+La anotación `@Conditional` se utiliza para aplicar una condición a un componente de Spring, como un bean o una configuración, para que solo se active si la condición especificada se cumple en tiempo de ejecución:
+
+```java
+@Configuration
+@Conditional(OnProductionEnvironmentCondition.class)
+public class ProductionConfiguration {
+    // Configuración específica para el entorno de producción
+}
+```
+
+#### @ConditionalOnClass and @ConditionalOnMissingClass
+
+TODO
+
+#### @ConditionalOnBean and @ConditionalOnMissingBean
+
+TODO
+
+#### @ConditionalOnProperty
+
+TODO
+
+#### @ConditionalOnResource
+
+TODO
+
+#### @ConditionalOnWebApplication and @ConditionalOnNotWebApplication
+
+TODO
+
+#### @ConditionalExpression
+
+TODO
 
 ---
 
