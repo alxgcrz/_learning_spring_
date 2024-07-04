@@ -26,7 +26,9 @@ En resumen, Spring Boot es una extensión de Spring Framework diseñada para hac
 
 Estas anotaciones forman parte del paquete [org.springframework.beans.factory.annotation](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/beans/factory/annotation/package-summary.html) y [org.springframework.context.annotation](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/package-summary.html).
 
-### @Autowired
+### DI-Related Annotations
+
+#### @Autowired
 
 La anotación `@Autowired` se utiliza para marcar una dependencia que el motor DI de Spring resolverá e inyectará. Esta anotación se puede usar en un **constructor**, en un **método _'setter'_** o en un **campo**:
 
@@ -74,7 +76,7 @@ Si se utiliza la inyección del constructor, **todos los argumentos del construc
 
 - [Constructor Dependency Injection in Spring](https://www.baeldung.com/constructor-injection-in-spring)
 
-### @Bean
+#### @Bean
 
 La anotación `@Bean` marca un _'factory method'_ que crea una instancia de un _bean_ de Spring:
 
@@ -106,7 +108,7 @@ Hay que tener en cuenta que **todos los métodos anotados con `@Bean` deben esta
 
 - [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Bean.html)
 
-### @Qualifier
+#### @Qualifier
 
 Se usa la anotación `@Qualifier` junto con `@Autowired` para proporcionar la **identificación del bean** o el **nombre del bean** que se debe usar, sobretodo en situaciones ambiguas.
 
@@ -145,7 +147,7 @@ Vehicle vehicle;
 
 - [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/beans/factory/annotation/Qualifier.html)
 
-### @Value
+#### @Value
 
 Se puede utilizar la anotación `@Value` para inyectar valores de propiedad en beans. Es compatible con constructorres, métodos _'setter'_ y con campos.
 
@@ -175,7 +177,7 @@ String fuelType;
 
 - [A Quick Guide to Spring @Value](https://www.baeldung.com/spring-value-annotation)
 
-### @DependsOn
+#### @DependsOn
 
 La anotación `@DependsOn` se puede utilizar para hacer que Spring **inicialice otros beans antes del anotado**. Normalmente, este comportamiento es automático y se basa en las dependencias explícitas entre beans. Spring, de forma predeterminada, gestiona el ciclo de vida de los beans y organiza su orden de inicialización.
 
@@ -200,7 +202,7 @@ Engine engine() {
 
 - [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/DependsOn.html)
 
-### @Lazy
+#### @Lazy
 
 La anotación `@Lazy` se utiliza cuando queremos inicializar un bean de forma diferida. De forma predeterminada, Spring crea todos los beans singleton al inicio/arranque del contexto de la aplicación.
 
@@ -227,7 +229,7 @@ class VehicleFactoryConfig {
 
 - [A Quick Guide to the Spring @Lazy Annotation](https://www.baeldung.com/spring-lazy-annotation)
 
-### @Lookup
+#### @Lookup
 
 Un método anotado con `@Lookup` le indica a Spring que devuelva una instancia del tipo de retorno del método cuando lo invoquemos.
 
@@ -235,7 +237,7 @@ Un método anotado con `@Lookup` le indica a Spring que devuelva una instancia d
 
 - [@Lookup Annotation in Spring](https://www.baeldung.com/spring-lookup)
 
-### @Primary
+#### @Primary
 
 A veces necesitamos definir **múltiples beans del mismo tipo**. En estos casos, la inyección no tendrá éxito porque Spring no sabe qué bean necesitamos.
 
@@ -269,7 +271,7 @@ En el ejemplo anterior, _'Car'_ es el vehículo principal. Por lo tanto, en la c
 
 - [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Primary.html)
 
-### @Scope
+#### @Scope
 
 Usamos `@Scope` para definir el ámbito de una clase `@Component` o una definición de `@Bean`. Puede ser **_singleton_**, **_prototype_**, **_request_**, **_session_**, **_globalSession_** o algún ámbito personalizado.
 
@@ -283,7 +285,9 @@ class Engine {}
 
 - [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Scope.html)
 
-### @Profile
+### Context Configuration Annotations
+
+#### @Profile
 
 Si queremos que Spring use una clase `@Component` o un método `@Bean` solo cuando un perfil específico esté activo, podemos marcarlo con `@Profile`. Podemos configurar el nombre del perfil con el argumento de la anotación:
 
@@ -297,7 +301,7 @@ class Bike implements Vehicle {}
 
 - [Spring Profiles](https://www.baeldung.com/spring-profiles)
 
-### @Import
+#### @Import
 
 La anotación `@Import` en Spring se utiliza para importar configuraciones adicionales a una configuración principal de la aplicación.
 
@@ -335,7 +339,7 @@ Aquí, _'MyUtilityClass'_ y _'AnotherHelper'_ son clases normales que no necesar
 
 - [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Import.html)
 
-### @ImportResource
+#### @ImportResource
 
 Podemos importar configuraciones XML con esta anotación. Podemos especificar las ubicaciones de los archivos XML utilizando un argumento en la anotación:
 
@@ -351,7 +355,7 @@ En contraste, `@Import` se utiliza para importar configuraciones y componentes d
 
 - [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/ImportResource.html)
 
-### @PropertySource
+#### @PropertySource
 
 Con esta anotación, podemos definir archivos de propiedades ('.properties' o '.yml') para la configuración de la aplicación:
 
@@ -399,7 +403,7 @@ class VehicleFactoryConfig {}
 
 - [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/PropertySource.html)
 
-### @PropertySources
+#### @PropertySources
 
 Podemos usar esta anotación para especificar múltiples configuraciones de `@PropertySource`:
 
@@ -424,7 +428,79 @@ Estas anotaciones forman parte del paquete [org.springframework.web.bind.annotat
 
 - [Spring Web MVC](https://docs.spring.io/spring-framework/reference/web/webmvc.html)
 
-### @RequestMapping
+### @RestController
+
+La anotación `@RestController` es una meta-anotación que combina las anotaciones `@Controller`  y `@ResponseBody`.
+
+```java
+@Controller
+@ResponseBody
+class VehicleRestController {
+    // ...
+}
+```
+
+```java
+@RestController
+class VehicleRestController {
+    // ...
+}
+```
+
+- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/RestController.html)
+
+### @CrossOrigin
+
+La anotación `@CrossOrigin` en Spring Framework es utilizada para configurar las políticas de intercambio de recursos entre diferentes dominios (CORS, por sus siglas en inglés - _"Cross-Origin Resource Sharing"_). CORS es un mecanismo de seguridad implementado por los navegadores web para restringir las solicitudes HTTP que se originan desde un dominio diferente al del servidor de destino.
+
+La anotación `@CrossOrigin` habilita la comunicación entre dominios para los métodos del controlador de solicitudes anotados:
+
+```java
+@RestController
+@RequestMapping("/api")
+public class MyController {
+
+    @CrossOrigin(origins = "http://allowed-origin.com", methods = {RequestMethod.GET, RequestMethod.POST})
+    @GetMapping("/data")
+    public ResponseEntity<String> getData() {
+        // Lógica para obtener datos
+        return ResponseEntity.ok("Data fetched successfully");
+    }
+}
+```
+
+Si marcamos una clase con él, se aplica a todos los métodos del controlador de solicitudes que contiene. Podemos ajustar el comportamiento de CORS con los argumentos de esta anotación.
+
+Se puede habilitar CORS globalmente para todos los controladores usando una clase de configuración como esta:
+
+```java
+@Configuration
+public class CorsConfig implements WebMvcConfigurer {
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOrigins("http://domain1.com", "https://domain2.com")
+                .allowedMethods("GET", "POST", "PUT", "DELETE")
+                .allowedHeaders("header1", "header2")
+                .exposedHeaders("header3", "header4")
+                .allowCredentials(true)
+                .maxAge(3600);
+    }
+}
+```
+
+Si se utiliza Spring Security en la aplicación, hay que asegurarse de que la configuración de CORS no entre en conflicto con las políticas de seguridad definidas en Spring Security.
+
+- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/CrossOrigin.html)
+
+- [CORS with Spring](https://www.baeldung.com/spring-cors)
+
+- [CORS](https://docs.spring.io/spring-framework/reference/web/webmvc-cors.html)
+
+### Request Handling Annotations
+
+#### @RequestMapping
 
 En pocas palabras, `@RequestMapping` marca métodos manejadores de peticiones dentro de clases anotadas con `@Controller`; puede configurarse utilizando:
 
@@ -475,7 +551,7 @@ Estas anotaciones están disponibles desde la **versión 4.3 de Spring**.
 
 - [Mapping Requests](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-requestmapping.html)
 
-### @RequestBody
+#### @RequestBody
 
 La anotación `@RequestBody` mapea el cuerpo de la solicitud HTTP a un objeto:
 
@@ -490,7 +566,7 @@ La deserialización es automática y depende del tipo de contenido de la solicit
 
 - [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/RequestBody.html)
 
-### @PathVariable
+#### @PathVariable
 
 Esta anotación indica que un argumento de método está vinculado a una variable de plantilla URI. Si el nombre de la parte en la plantilla coincide con el nombre del argumento del método, no es necesario especificarlo en la anotación:
 
@@ -539,7 +615,7 @@ Vehicle getVehicle(@PathVariable(required = false) long id) {
 
 - [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/PathVariable.html)
 
-### @RequestParam
+#### @RequestParam
 
 Se utilizas `@RequestParam` para acceder a los parámetros de solicitud HTTP:
 
@@ -567,129 +643,7 @@ Car buyCar(@RequestParam(defaultValue = "5") int seatCount) {
 
 - [@RequestParam](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/requestparam.html)
 
-### @ResponseBody
-
-Si marcamos un método de controlador de solicitudes con `@ResponseBody`, Spring trata el resultado del método como la respuesta misma.
-
-Es decir, cuando un método de controlador anotado con `@ResponseBody` se invoca y retorna un objeto, Spring convierte automáticamente ese objeto en un formato específico para la respuesta HTTP. La conversión del objeto a formato se realiza a través de un convertidor de medios (media converter), que depende de la configuración de Spring y de las bibliotecas disponibles en el classpath.
-
-Es útil cuando se está construyendo una API RESTful y se desea retornar objetos como JSON o XML en lugar de vistas HTML.
-
-```java
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
-
-@RestController
-public class ExampleController {
-
-    @GetMapping("/hello")
-    @ResponseBody
-    public String helloWorld() {
-        return "Hello, World!";
-    }
-
-    @GetMapping("/user")
-    @ResponseBody
-    public User getUser(@RequestParam String username) {
-        // Supongamos que aquí se obtiene un usuario de una base de datos
-        User user = userRepository.findByUsername(username);
-        return user;
-    }
-}
-```
-
-Si anotamos una clase @Controller con esta anotación, todos los métodos del controlador de solicitudes la usarán. Este es el efecto de `@RestController`, que no es más que una metaanotación marcada con `@Controller` y `@ResponseBody`
-
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/ResponseBody.html)
-
-- [@ResponseBody](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/responsebody.html)
-
-### @ExceptionHandler
-
-Con esta anotación, podemos declarar un método de manejo de errores personalizado. Spring llama a este método cuando un método de controlador de solicitudes genera cualquiera de las excepciones especificadas.
-
-La excepción detectada se puede pasar al método como argumento:
-
-```java
-@ExceptionHandler(IllegalArgumentException.class)
-void onIllegalArgumentException(IllegalArgumentException exception) {
-    // ...
-}
-```
-
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/ExceptionHandler.html)
-
-- [Exceptions](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-exceptionhandler.html)
-
-### @ResponseStatus
-
-Podemos especificar el código de estado HTTP deseado de la respuesta si anotamos un método manejador de solicitud con esta anotación. Podemos declarar el código de estado con el argumento `code`, o su alias, el argumento `value`.
-
-```java
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
-
-@RestController
-public class ExampleController {
-
-    @GetMapping("/hello")
-    @ResponseStatus(HttpStatus.OK)
-    public String helloWorld() {
-        return "Hello, World!";
-    }
-}
-```
-
-Además, podemos proporcionar un motivo utilizando el argumento `reason`:
-
-```java
-@GetMapping("/notfound")
-@ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Resource not found")
-public void resourceNotFound() {
-    // Method body
-}
-```
-
-También podemos usarlo junto con `@ExceptionHandler`:
-
-```java
-@ExceptionHandler(IllegalArgumentException.class)
-@ResponseStatus(HttpStatus.BAD_REQUEST)
-void onIllegalArgumentException(IllegalArgumentException exception) {
-    // ...
-}
-```
-
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/ResponseStatus.html)
-
-- [Returning Custom Status Codes from Spring Controllers](https://www.baeldung.com/spring-mvc-controller-custom-http-status-code)
-
-### @RestController
-
-La anotación `@RestController` es una meta-anotación que combina las anotaciones `@Controller`  y `@ResponseBody`.
-
-```java
-@Controller
-@ResponseBody
-class VehicleRestController {
-    // ...
-}
-```
-
-```java
-@RestController
-class VehicleRestController {
-    // ...
-}
-```
-
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/RestController.html)
-
-### @ModelAttribute
+#### @ModelAttribute
 
 La anotación `@ModelAttribute` en Spring MVC es utilizada para enlazar un método o parámetro de método a un atributo de modelo. Esta anotación es útil en el contexto de controladores de Spring MVC, donde se manejan las solicitudes HTTP y se prepara la respuesta.
 
@@ -787,56 +741,7 @@ public class EmployeeController {
 
 - [Model](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-modelattrib-methods.html)
 
-### @CrossOrigin
-
-La anotación `@CrossOrigin` en Spring Framework es utilizada para configurar las políticas de intercambio de recursos entre diferentes dominios (CORS, por sus siglas en inglés - _"Cross-Origin Resource Sharing"_). CORS es un mecanismo de seguridad implementado por los navegadores web para restringir las solicitudes HTTP que se originan desde un dominio diferente al del servidor de destino.
-
-La anotación `@CrossOrigin` habilita la comunicación entre dominios para los métodos del controlador de solicitudes anotados:
-
-```java
-@RestController
-@RequestMapping("/api")
-public class MyController {
-
-    @CrossOrigin(origins = "http://allowed-origin.com", methods = {RequestMethod.GET, RequestMethod.POST})
-    @GetMapping("/data")
-    public ResponseEntity<String> getData() {
-        // Lógica para obtener datos
-        return ResponseEntity.ok("Data fetched successfully");
-    }
-}
-```
-
-Si marcamos una clase con él, se aplica a todos los métodos del controlador de solicitudes que contiene. Podemos ajustar el comportamiento de CORS con los argumentos de esta anotación.
-
-Se puede habilitar CORS globalmente para todos los controladores usando una clase de configuración como esta:
-
-```java
-@Configuration
-public class CorsConfig implements WebMvcConfigurer {
-
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**")
-                .allowedOrigins("http://domain1.com", "https://domain2.com")
-                .allowedMethods("GET", "POST", "PUT", "DELETE")
-                .allowedHeaders("header1", "header2")
-                .exposedHeaders("header3", "header4")
-                .allowCredentials(true)
-                .maxAge(3600);
-    }
-}
-```
-
-Si se utiliza Spring Security en la aplicación, hay que asegurarse de que la configuración de CORS no entre en conflicto con las políticas de seguridad definidas en Spring Security.
-
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/CrossOrigin.html)
-
-- [CORS with Spring](https://www.baeldung.com/spring-cors)
-
-- [CORS](https://docs.spring.io/spring-framework/reference/web/webmvc-cors.html)
-
-### @CookieValue
+#### @CookieValue
 
 La anotación `@CookieValue` en Spring Framework se utiliza para enlazar el valor de una cookie HTTP específica a un parámetro de método en un controlador de Spring MVC. Esto es útil cuando se necesita acceder al valor de una cookie específica enviada por el cliente en una solicitud HTTP.
 
@@ -871,7 +776,7 @@ public ResponseEntity<String> getCookies(@CookieValue(name = "cookie1", defaultV
 
 - [@CookieValue](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/cookievalue.html)
 
-### @RequestHeader
+#### @RequestHeader
 
 La anotación `@RequestHeader` en Spring Framework se utiliza para enlazar el valor de una cabecera HTTP específica a un parámetro de método en un controlador de Spring MVC. Esto es útil cuando necesitas acceder a valores específicos de las cabeceras HTTP enviadas por el cliente en una solicitud.
 
@@ -893,6 +798,109 @@ Por defecto, se requiere la presencia de la cabecera, lo que significa que Sprin
 - [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/RequestHeader.html)
 
 - [@RequestHeader](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/requestheader.html)
+
+### Response Handling Annotations
+
+#### @ResponseBody
+
+Si marcamos un método de controlador de solicitudes con `@ResponseBody`, Spring trata el resultado del método como la respuesta misma.
+
+Es decir, cuando un método de controlador anotado con `@ResponseBody` se invoca y retorna un objeto, Spring convierte automáticamente ese objeto en un formato específico para la respuesta HTTP. La conversión del objeto a formato se realiza a través de un convertidor de medios (media converter), que depende de la configuración de Spring y de las bibliotecas disponibles en el classpath.
+
+Es útil cuando se está construyendo una API RESTful y se desea retornar objetos como JSON o XML en lugar de vistas HTML.
+
+```java
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class ExampleController {
+
+    @GetMapping("/hello")
+    @ResponseBody
+    public String helloWorld() {
+        return "Hello, World!";
+    }
+
+    @GetMapping("/user")
+    @ResponseBody
+    public User getUser(@RequestParam String username) {
+        // Supongamos que aquí se obtiene un usuario de una base de datos
+        User user = userRepository.findByUsername(username);
+        return user;
+    }
+}
+```
+
+Si anotamos una clase @Controller con esta anotación, todos los métodos del controlador de solicitudes la usarán. Este es el efecto de `@RestController`, que no es más que una metaanotación marcada con `@Controller` y `@ResponseBody`
+
+- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/ResponseBody.html)
+
+- [@ResponseBody](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/responsebody.html)
+
+#### @ExceptionHandler
+
+Con esta anotación, podemos declarar un método de manejo de errores personalizado. Spring llama a este método cuando un método de controlador de solicitudes genera cualquiera de las excepciones especificadas.
+
+La excepción detectada se puede pasar al método como argumento:
+
+```java
+@ExceptionHandler(IllegalArgumentException.class)
+void onIllegalArgumentException(IllegalArgumentException exception) {
+    // ...
+}
+```
+
+- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/ExceptionHandler.html)
+
+- [Exceptions](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-exceptionhandler.html)
+
+#### @ResponseStatus
+
+Podemos especificar el código de estado HTTP deseado de la respuesta si anotamos un método manejador de solicitud con esta anotación. Podemos declarar el código de estado con el argumento `code`, o su alias, el argumento `value`.
+
+```java
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class ExampleController {
+
+    @GetMapping("/hello")
+    @ResponseStatus(HttpStatus.OK)
+    public String helloWorld() {
+        return "Hello, World!";
+    }
+}
+```
+
+Además, podemos proporcionar un motivo utilizando el argumento `reason`:
+
+```java
+@GetMapping("/notfound")
+@ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Resource not found")
+public void resourceNotFound() {
+    // Method body
+}
+```
+
+También podemos usarlo junto con `@ExceptionHandler`:
+
+```java
+@ExceptionHandler(IllegalArgumentException.class)
+@ResponseStatus(HttpStatus.BAD_REQUEST)
+void onIllegalArgumentException(IllegalArgumentException exception) {
+    // ...
+}
+```
+
+- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/ResponseStatus.html)
+
+- [Returning Custom Status Codes from Spring Controllers](https://www.baeldung.com/spring-mvc-controller-custom-http-status-code)
 
 ## [Spring Boot Annotations](https://www.baeldung.com/spring-boot-annotations)
 
@@ -964,25 +972,295 @@ public class ProductionConfiguration {
 
 #### @ConditionalOnClass and @ConditionalOnMissingClass
 
-TODO
+Usando estas condiciones, Spring solo usará el bean de configuración automática marcado si la clase en el argumento de la anotación está presente/ausente:
+
+```java
+@Configuration
+@ConditionalOnClass(DataSource.class)
+class MySQLAutoconfiguration {
+    //...
+}
+```
 
 #### @ConditionalOnBean and @ConditionalOnMissingBean
 
-TODO
+Podemos usar estas anotaciones cuando queramos definir condiciones basadas en la presencia o ausencia de un bean específico:
+
+```java
+@Bean
+@ConditionalOnBean(name = "dataSource")
+LocalContainerEntityManagerFactoryBean entityManagerFactory() {
+    // ...
+}
+```
 
 #### @ConditionalOnProperty
 
-TODO
+Con esta anotación, podemos poner condiciones sobre los valores de las propiedades:
+
+```java
+@Bean
+@ConditionalOnProperty(
+    name = "usemysql", 
+    havingValue = "local"
+)
+DataSource dataSource() {
+    // ...
+}
+```
 
 #### @ConditionalOnResource
 
-TODO
+Podemos hacer que Spring use una definición solo cuando un recurso específico esté presente:
+
+```java
+@ConditionalOnResource(resources = "classpath:mysql.properties")
+Properties additionalProperties() {
+    // ...
+}
+```
 
 #### @ConditionalOnWebApplication and @ConditionalOnNotWebApplication
 
-TODO
+Con estas anotaciones podemos crear condiciones en función de si la aplicación actual es o no una aplicación web:
+
+```java
+@ConditionalOnWebApplication
+HealthCheckController healthCheckController() {
+    // ...
+}
+```
 
 #### @ConditionalExpression
+
+Podemos utilizar esta anotación en situaciones más complejas. Spring usará la definición marcada cuando la expresión SpEL se evalúe como verdadera:
+
+```java
+@Bean
+@ConditionalOnExpression("${usemysql} && ${mysqlserver == 'local'}")
+DataSource dataSource() {
+    // ...
+}
+```
+
+## [Spring Scheduling Annotations](https://www.baeldung.com/spring-scheduling-annotations)
+
+Cuando la ejecución de un solo hilo no es suficiente, podemos usar anotaciones del paquete [org.springframework.scheduling.annotation](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/scheduling/annotation/Scheduled.html).
+
+- [Task Execution and Scheduling](https://docs.spring.io/spring-framework/reference/integration/scheduling.html#scheduling-annotation-support)
+
+### @EnableAsync
+
+Con esta anotación, podemos habilitar la funcionalidad asíncrona en Spring.
+
+Debemos usarla junto con `@Configuration`:
+
+```java
+@Configuration
+@EnableAsync
+class VehicleFactoryConfig {}
+```
+
+Ahora que habilitamos las llamadas asincrónicas, podemos usar `@Async` para definir los métodos que las admiten.
+
+- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/scheduling/annotation/EnableAsync.html)
+
+### @EnableScheduling
+
+Con esta anotación, podemos habilitar la programación en la aplicación.
+
+Debemos usarla junto con `@Configuration`:
+
+```java
+@Configuration
+@EnableScheduling
+class VehicleFactoryConfig {}
+```
+
+Como resultado, ahora podemos ejecutar métodos periódicamente con `@Scheduled`.
+
+- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/scheduling/annotation/EnableScheduling.html)
+
+### @Async
+
+La anotación `@Async` en Spring se utiliza para marcar un método como **asíncrono**, lo que permite que dicho método sea ejecutado en un hilo separado o en un pool de hilos dedicado administrado por Spring. Esto es útil para operaciones que no necesitan bloquear el hilo principal de ejecución, como tareas de larga duración, operaciones de E/S intensivas, o llamadas a servicios externos.
+
+Para lograr esto, podemos anotar el método con `@Async`:
+
+```java
+@Async
+void repairCar() {
+    // ...
+}
+```
+
+Si aplicamos esta anotación a una clase, todos los métodos se llamarán de forma asincrónica.
+
+Para que `@Async` funcione correctamente, la clase que contiene el método anotado debe ser administrada por Spring (normalmente usando `@Service`, `@Component`, o `@Repository`)
+
+Tenga en cuenta que debemos habilitar las llamadas asincrónicas para que funcione esta anotación, con `@EnableAsync` o configuración XML.
+
+Un método anotado con `@Async` puede devolver un valor envuelto en un _"Future"_ si se necesita obtener el resultado de la ejecución asíncrona:
+
+```java
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+import java.util.concurrent.Future;
+
+@Service
+public class MyService {
+
+    @Async
+    public Future<String> asyncMethodWithReturn() {
+        // Método que retorna un resultado de manera asíncrona
+        return new AsyncResult<>("Resultado asíncrono");
+    }
+}
+```java
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+import java.util.concurrent.Future;
+
+@Service
+public class MyService {
+
+    @Async
+    public Future<String> asyncMethodWithReturn() {
+        // Método que retorna un resultado de manera asíncrona
+        return new AsyncResult<>("Resultado asíncrono");
+    }
+}
+```
+
+- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/scheduling/annotation/Async.html)
+
+- [How To Do @Async in Spring](https://www.baeldung.com/spring-async)
+
+### @Scheduled
+
+La anotación `@Scheduled` en Spring se utiliza para programar la ejecución de métodos a intervalos específicos, en momentos particulares o según expresiones cron. Esta anotación es útil para tareas recurrentes y automatización de procesos dentro de una aplicación Spring.
+
+Si necesitamos que un método se ejecute periódicamente, podemos usar esta anotación:
+
+```java
+@Scheduled(fixedRate = 10000)
+void checkVehicle() {
+    // ...
+}
+```
+
+Podemos usarlo para ejecutar un método a **intervalos fijos**, o podemos ajustarlo con **expresiones similares a cron**:
+
+- **'fixedRate'**: ejecuta el método con una tasa fija en milisegundos, independientemente de cuánto tiempo haya tomado la ejecución anterior.
+
+- **'fixedDelay'**: ejecuta el método con un retraso fijo en milisegundos después de que se completa la ejecución anterior.
+
+- **'initialDelay'**: especifica un retraso inicial en milisegundos antes de la primera ejecución del método.
+
+- **'cron'**: permite una expresión cron para definir horarios más complejos y específicos.
+
+`@Scheduled` aprovecha la función de anotaciones repetidas de Java 8, lo que significa que podemos marcar un método con ella varias veces:
+
+```java
+@Scheduled(fixedRate = 10000)
+@Scheduled(cron = "0 * * * * MON-FRI")
+void checkVehicle() {
+    // ...
+}
+```
+
+Tenga en cuenta que el método anotado con `@Scheduled` debe tener un tipo de retorno nulo.
+
+Además, debemos habilitar la programación para que esta anotación funcione, por ejemplo, con `@EnableScheduling` o la configuración XML.
+
+Para que `@Scheduled` funcione correctamente, la clase que contiene el método anotado debe ser administrada por Spring (normalmente utilizando `@Component`, `@Service`, o similar).
+
+- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/scheduling/annotation/Scheduled.html)
+
+- [The @Scheduled Annotation in Spring](https://www.baeldung.com/spring-scheduled-tasks)
+
+### @Schedules
+
+Podemos usar esta anotación para especificar múltiples reglas `@Scheduled`:
+
+```java
+@Schedules({ 
+  @Scheduled(fixedRate = 10000), 
+  @Scheduled(cron = "0 * * * * MON-FRI")
+})
+void checkVehicle() {
+    // ...
+}
+```
+
+Hay que tener en cuenta que desde Java 8 se puede lograr lo mismo con la función de anotaciones repetidas.
+
+## [Spring Data Annotations](https://www.baeldung.com/spring-data-annotations)
+
+**Spring Data** proporciona una abstracción sobre las tecnologías de almacenamiento de datos. Por lo tanto, nuestro código de lógica de negocios puede ser mucho más independiente de la implementación de persistencia subyacente. Además, Spring simplifica el manejo de los detalles del almacenamiento de datos que dependen de la implementación.
+
+- [Javadoc](https://docs.spring.io/spring-data/commons/docs/current/api/)
+
+- [Data Access](https://docs.spring.io/spring-framework/reference/data-access.html)
+
+### Common Spring Data Annotations
+
+#### @Transactional
+
+La anotación `@Transactional` en Spring se utiliza para administrar transacciones en métodos o clases de manera declarativa. Esta anotación permite que los métodos anotados se ejecuten dentro de una transacción gestionada por Spring, asegurando la atomicidad, consistencia, aislamiento y durabilidad (ACID) de las operaciones realizadas en la base de datos u otros recursos transaccionales.
+
+Cuando queramos configurar el comportamiento transaccional de un método, podemos hacerlo con:
+
+```java
+@Transactional
+void pay() {}
+```
+
+Si aplicamos esta anotación a nivel de clase, funciona en todos los métodos dentro de la clase. Sin embargo, podemos anular sus efectos aplicándolo a un método específico.
+
+- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/transaction/annotation/Transactional.html)
+
+- [Transactions with Spring and JPA](https://www.baeldung.com/transaction-configuration-with-jpa-and-spring)
+
+#### @NoRepositoryBean
+
+La anotación `@NoRepositoryBean` en Spring se utiliza para indicar a Spring que una interfaz de repositorio específica no debe ser considerada como un repositorio gestionado por **Spring Data**. Esto significa que no se creará una instancia de Spring para esa interfaz de repositorio en particular, y por lo tanto, no se aplicarán las características de repositorio típicas como la generación automática de consultas y métodos CRUD.
+
+```java
+import org.springframework.data.repository.NoRepositoryBean;
+import org.springframework.data.repository.Repository;
+
+@NoRepositoryBean
+public interface MyBaseRepository<T, ID> extends Repository<T, ID> {
+    // Métodos personalizados que no son generados automáticamente por Spring Data
+}
+
+@Repository
+public interface UserRepository extends MyBaseRepository<User, Long> {
+    // Spring Data generará automáticamente métodos CRUD para la entidad User
+}
+```
+
+La anotación `@NoRepositoryBean` es útil cuando se requiere definir una interfaz base para repositorios que contengan métodos comunes o personalizados, pero que no represente un repositorio que deba ser instanciado directamente por **Spring Data**.
+
+- [Javadoc](https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/repository/NoRepositoryBean.html)
+
+#### @Param
+
+Podemos pasar parámetros con nombre a nuestras consultas usando `@Param`:
+
+```java
+@Query("FROM Person p WHERE p.name = :name")
+Person findByName(@Param("name") String name);
+```
+
+Tenga en cuenta que nos referimos al parámetro con la sintaxis `:name`.
+
+- [Javadoc](https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/repository/query/Param.html)
+
+- [Spring Data JPA @Query](https://www.baeldung.com/spring-data-jpa-query)
+
+#### @Id
 
 TODO
 
