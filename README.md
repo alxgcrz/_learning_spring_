@@ -1262,6 +1262,313 @@ Tenga en cuenta que nos referimos al parámetro con la sintaxis `:name`.
 
 #### @Id
 
+La anotación `@Id` marca un campo en una clase de modelo como **clave principal**:
+
+```java
+class Person {
+
+    @Id
+    Long id;
+
+    // ...
+    
+}
+```
+
+Dado que es independiente de la implementación, hace que una clase de modelo sea fácil de usar con múltiples motores de almacenamiento de datos.
+
+- [Javadoc](https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/annotation/Id.html)
+
+#### @Transient
+
+Podemos usar esta anotación para marcar un campo en una clase de modelo como **transitorio**. Por lo tanto, el motor del almacén de datos no leerá ni escribirá el valor de este campo:
+
+```java
+class Person {
+
+    // ...
+
+    @Transient
+    int age;
+
+    // ...
+
+}
+```
+
+Al igual que `@Id`, `@Transient` también es independiente de la implementación, lo que hace que sea conveniente utilizarlo con múltiples implementaciones de almacenes de datos.
+
+- [Javadoc](https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/annotation/Transient.html)
+
+#### Campos de auditoría
+
+En Spring Data, las anotaciones de campos de auditoría son utilizadas para mantener un rastro automático de ciertas acciones comunes, como la creación y modificación de entidades. Estas anotaciones permiten que Spring Data gestione automáticamente campos como el usuario que creó la entidad, el usuario que la modificó, y las fechas de creación y modificación:
+
+- **`@CreatedBy`**: se utiliza para marcar un campo que debe contener el usuario que creó la entidad. Este campo se llena automáticamente cuando la entidad se persiste por primera vez.
+
+- **`@LastModifiedBy`**: indica el usuario que realizó la última modificación a la entidad. Este campo se actualiza automáticamente cada vez que la entidad se modifica.
+
+- **`@CreatedDate`**: marca un campo para almacenar la fecha y hora en que la entidad fue creada. Este campo se llena automáticamente cuando la entidad se persiste por primera vez.
+
+- **`@LastModifiedDate`**: se utiliza para anotar un campo que debe contener la fecha y hora de la última modificación de la entidad. Este campo se actualiza automáticamente cada vez que la entidad se modifica.
+
+```java
+public class Person {
+
+    // ...
+
+    @CreatedBy
+    User creator;
+    
+    @LastModifiedBy
+    User modifier;
+    
+    @CreatedDate
+    Date createdAt;
+    
+    @LastModifiedDate
+    Date modifiedAt;
+
+    // ...
+
+}
+```
+
+Para utilizar estas anotaciones, se debe seguir algunos pasos adicionales para habilitar la auditoría en una aplicación Spring:
+
+- Añadir la anotación `@EnableJpaAuditing` en una clase de configuración de Spring para habilitar la auditoría:
+
+```java
+@Configuration
+@EnableJpaAuditing(auditorAwareRef = "auditorProvider")
+public class AuditConfig {
+}
+```
+
+- Implementar la interfaz `AuditorAware` para especificar cómo se obtiene el usuario actual:
+
+```java
+@Component
+public class AuditorAwareImpl implements AuditorAware<String> {
+
+    @Override
+    public Optional<String> getCurrentAuditor() {
+        // Lógica para obtener el usuario actual, por ejemplo, del contexto de seguridad de Spring
+        return Optional.of(SecurityContextHolder.getContext().getAuthentication().getName());
+    }
+}
+```
+
+- [Javadoc](https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/annotation/package-summary.html)
+
+- [Auditing with JPA, Hibernate, and Spring Data JPA](https://www.baeldung.com/database-auditing-jpa)
+
+- [Auditing](https://docs.spring.io/spring-data/jpa/reference/auditing.html)
+
+### Spring Data JPA Annotations
+
+#### @Query
+
+Con la anotación `@Query`, se proporciona proporcionar una **implementación JPQL** para un método de repositorio:
+
+```java
+@Query("SELECT COUNT(*) FROM Person p")
+long getPersonCount();
+```
+
+Además, se puede utilizar parámetros con nombre con la anotación `@Param`:
+
+```java
+@Query("FROM Person p WHERE p.name = :name")
+Person findByName(@Param("name") String name);
+```
+
+Spring se pueden utilizar consultas SQL nativas, si se configura el argumento `nativeQuery = true`:
+
+```java
+@Query(value = "SELECT AVG(p.age) FROM person p", nativeQuery = true)
+int getAverageAge();
+```
+
+- [Spring Data JPA @Query](https://www.baeldung.com/spring-data-jpa-query)
+
+#### @Procedure
+
+Con Spring Data JPA podemos llamar fácilmente a procedimientos almacenados desde repositorios.
+
+Primero, se necesita declarar el repositorio en la clase de entidad usando anotaciones JPA estándar:
+
+```java
+@NamedStoredProcedureQueries({ 
+    @NamedStoredProcedureQuery(
+        name = "count_by_name", 
+        procedureName = "person.count_by_name", 
+        parameters = { 
+            @StoredProcedureParameter(
+                mode = ParameterMode.IN, 
+                name = "name", 
+                type = String.class),
+            @StoredProcedureParameter(
+                mode = ParameterMode.OUT, 
+                name = "count", 
+                type = Long.class) 
+            }
+    ) 
+})
+
+class Person {}
+```
+
+Después de esto, se puedes hacer referencia a él en el repositorio con el nombre que se declaramos en el argumento `name`:
+
+```java
+@Procedure(name = "count_by_name")
+long getCountByName(@Param("name") String name);
+```
+
+#### @Lock
+
+La anotación `@Lock` en Spring es parte del módulo **Spring Data JPA** y se utiliza para especificar el nivel de bloqueo que se debe aplicar a una consulta JPA en las operaciones de acceso a la base de datos. Esta anotación es útil para controlar la concurrencia y evitar problemas como condiciones de carrera, especialmente en entornos donde múltiples transacciones pueden intentar acceder o modificar los mismos datos simultáneamente.
+
+La anotación `@Lock` admite varios tipos principales de bloqueo:
+
+- **`LockModeType.NONE`**: no se aplica ningún bloqueo. Este es el **modo predeterminado** si no se especifica un tipo de bloqueo.
+
+- **`LockModeType.PESSIMISTIC_READ`: este bloqueo permite que otras transacciones lean los datos, pero no permite actualizaciones. Es útil para evitar que los datos cambien mientras se está leyendo.
+
+- **`LockModeType.PESSIMISTIC_WRITE`**: este bloqueo evita que otras transacciones lean o actualicen los datos mientras se mantiene el bloqueo. Es útil cuando se necesita asegurarse de que nadie más pueda leer o modificar los datos hasta que la transacción actual termine.
+
+- **`LockModeType.PESSIMISTIC_FORCE_INCREMENT`**: adquiere un bloqueo de escritura pesimista y además incrementa la versión de la entidad. Asegura que las transacciones concurrentes vean la nueva versión de la entidad.
+
+- **`LockModeType.OPTIMISTIC`**: utiliza el bloqueo optimista, que se basa en versiones. Permite que múltiples transacciones lean y actualicen los datos, pero verifica al final de la transacción si los datos han cambiado desde la última lectura. Si es así, lanza una excepción `OptimisticLockException`.
+
+- **`LockModeType.OPTIMISTIC_FORCE_INCREMENT`**: similar al bloqueo optimista, pero además incrementa la versión de la entidad. Es útil para asegurar que cualquier otra transacción que quiera leer los datos tendrá que esperar hasta que la transacción actual complete.
+
+- **`LockModeType.READ`: sinónimo de `OPTIMISTIC`. Poco usado en la práctica.
+
+- **`LockModeType.WRITE`: sinónimo de `OPTIMISTIC_FORCE_INCREMENT`. Poco usado en la práctica.
+
+Los **bloqueos pesimistas** pueden afectar el rendimiento de la base de datos, ya que impiden que otras transacciones accedan a los datos bloqueados.
+
+Los **bloqueos optimistas** son más apropiados para sistemas con alta concurrencia, ya que permiten una mayor escalabilidad al no bloquear los datos de manera exclusiva.
+
+- [Javadoc](https://docs.spring.io/spring-data/jpa/docs/current/api/org/springframework/data/jpa/repository/Lock.html)
+
+- [Javadoc](https://jakarta.ee/specifications/persistence/2.2/apidocs/javax/persistence/lockmodetype)
+
+- [Enabling Transaction Locks in Spring Data JPA](https://www.baeldung.com/java-jpa-transaction-locks)
+
+- [Locking](https://docs.spring.io/spring-data/jpa/reference/jpa/locking.htm)
+
+#### @Modifying
+
+Se pueden modificar datos con un método de repositorio si se anota con `@Modifying`:
+
+```java
+@Modifying
+@Query("UPDATE Person p SET p.name = :name WHERE p.id = :id")
+void changeName(@Param("id") long id, @Param("name") String name);
+```
+
+- [Spring Data JPA @Query](https://www.baeldung.com/spring-data-jpa-query)
+
+#### @EnableJpaRepositories
+
+Para utilizar repositorios JPA, se le tiene que indicar a Spring mediante la anotación `@EnableJpaRepositories`.
+
+Hay que tener en cuenta que se debe usar esta anotación con la anotación `@Configuration`:
+
+```java
+@Configuration
+@EnableJpaRepositories
+class PersistenceJPAConfig {}
+```
+
+Spring buscará repositorios en los subpaquetes de esta clase `@Configuration`. Se puede alterar este comportamiento con el argumento `basePackages`:
+
+```java
+@Configuration
+@EnableJpaRepositories(basePackages = "com.baeldung.persistence.dao")
+class PersistenceJPAConfig {}
+```
+
+También hay que tener en cuenta que Spring Boot hace esto automáticamente si encuentra **Spring Data JPA en el classpath**.
+
+### Spring Data Mongo Annotations
+
+Spring Data hace que trabajar con MongoDB sea mucho más fácil.
+
+- [Introduction to Spring Data MongoDB](https://www.baeldung.com/spring-data-mongodb-tutorial)
+
+#### @Document
+
+Esta anotación marca una clase como un objeto de dominio que queremos conservar en la base de datos:
+
+```java
+@Document
+class User {}
+```
+
+También nos permite elegir el nombre de la colección que queremos utilizar:
+
+```java
+@Document(collection = "user")
+class User {}
+```
+
+Esta anotación `@Document` es el equivalente en Mongo de `@Entity` en JPA.
+
+#### @Field
+
+Con la anotación `@Field`, podemos configurar el nombre de un campo que queremos usar cuando MongoDB persiste el documento:
+
+```java
+@Document
+class User {
+
+    // ...
+
+    @Field("email")
+    String emailAddress;
+
+    // ...
+
+}
+```
+
+Esta anotación `@Field` es el equivalente en Mongo de `@Column` en JPA.
+
+#### @Query
+
+Con la anotación `@Query`, podemos proporcionar una consulta de buscador en un método de repositorio de MongoDB:
+
+```java
+@Query("{ 'name' : ?0 }")
+List<User> findUsersByName(String name);
+```
+
+#### @EnableMongoRepositories
+
+Para utilizar repositorios de MongoDB, tenemos que indicárselo a Spring. Podemos hacer esto con `@EnableMongoRepositories`. Esta anotación se tiene que utilizar con la anotación `@Configuration`:
+
+```java
+@Configuration
+@EnableMongoRepositories
+class MongoConfig {}
+```
+
+Spring buscará repositorios en los subpaquetes de esta clase `@Configuration`. Podemos alterar este comportamiento con el argumento `basePackages`:
+
+```java
+@Configuration
+@EnableMongoRepositories(basePackages = "com.baeldung.repository")
+class MongoConfig {}
+```
+
+Spring Boot hace esto automáticamente si encuentra **Spring Data MongoDB en el classpath**.
+
+## [Spring Bean Annotations](https://www.baeldung.com/spring-bean-annotations)
+
 TODO
 
 ---
