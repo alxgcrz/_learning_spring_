@@ -1573,7 +1573,7 @@ Hay varias formas de configurar _beans_ en un contenedor Spring. En primer lugar
 
 Finalmente, podemos marcar la clase como componentes gestionados por el contenedor de Spring con una de las anotaciones del paquete [org.springframework.stereotype](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/stereotype/package-summary.html) y dejar el trabajo para el escaneo de componentes.
 
-### Component Scanning
+### @ComponentScan
 
 Spring puede **escanear automáticamente** un paquete en busca de _beans_ si el escaneo de componentes está habilitado.
 
@@ -1718,9 +1718,17 @@ class VehicleFactoryConfig {
 
 - <https://spring.io/>
 - <https://docs.spring.io/spring-framework/reference/>
-- <https://docs.spring.io/spring-boot/docs/current/reference/html>
-- <https://www.baeldung.com/spring-core-annotations>
-- <https://www.baeldung.com/spring-boot-start>
+- <https://docs.spring.io/spring-boot/>
+
+### Guías (Baeldung)
+
+- [Spring Framework Introduction](https://www.baeldung.com/spring-intro)
+- [Learn Spring Boot](https://www.baeldung.com/spring-boot)
+- [Spring Dependency Injection](https://www.baeldung.com/spring-dependency-injection)
+- [Spring MVC Guides](https://www.baeldung.com/spring-mvc)
+- [REST with Spring Tutorial](https://www.baeldung.com/rest-with-spring-series)
+- [Security with Spring](https://www.baeldung.com/security-spring)
+- [All Spring Data Guides](https://www.baeldung.com/spring-data)
 
 ## Licencia
 
