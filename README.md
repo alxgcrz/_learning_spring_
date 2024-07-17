@@ -149,33 +149,90 @@ Vehicle vehicle;
 
 #### @Value
 
-Se puede utilizar la anotación `@Value` para inyectar valores de propiedad en beans. Es compatible con constructorres, métodos _'setter'_ y con campos.
+Se puede utilizar la anotación `@Value` para inyectar valores de propiedad en _beans_. Es compatible con **constructores**, **métodos _'setter'_** y con **campos**.
 
 ```java
-// Constructor injection
+// Constructor
 Engine(@Value("8") int cylinderCount) {
     this.cylinderCount = cylinderCount;
 }
 ```
 
-Por supuesto, inyectar valores estáticos no es útil. Por lo tanto, podemos usar **cadenas _'placeholder'_** en `@Value` para conectar valores definidos en fuentes externas, por ejemplo, en archivos _'.properties'_ o _'.yaml'_.
+Por supuesto, inyectar valores estáticos no es útil.
 
-Por ejemplo, un valor en un fichero externo podría ser:
+Podemos usar **cadenas _'placeholder'_** en `@Value` para conectar valores definidos en fuentes externas, por ejemplo, en archivos _'.properties'_ o _'.yaml'_.
+
+Por ejemplo, un valor en un fichero externo _"application.properties"_ podría ser:
 
 ```text
-engine.fuelType=petrol
+catalog.name=MovieCatalog
 ```
 
-Podemos inyectar el valor de esta forma:
+Podemos inyectar este valor de esta forma.:
 
 ```java
-@Value("${engine.fuelType}")
-String fuelType;
+@Component
+public class MovieRecommender {
+
+    private final String catalog;
+
+    public MovieRecommender(@Value("${catalog.name}") String catalog) {
+        this.catalog = catalog;
+    }
+}
+```
+
+Y con la siguiente configuración:
+
+```java
+@Configuration
+@PropertySource("classpath:application.properties")
+public class AppConfig { }
+```
+
+Si la propiedad no está definida, se podría proporcionar un valor por defecto:
+
+```java
+@Component
+public class MovieRecommender {
+
+    private final String catalog;
+
+    public MovieRecommender(@Value("${catalog.name:defaultCatalog}") String catalog) {
+        this.catalog = catalog;
+    }
+}
+```
+
+Cuando `@Value("#{expression}")` contiene una expresión SpEL, el valor se calculará dinámicamente en tiempo de ejecución.
+
+```java
+// Literal expressions
+"#{'Hello World'}"  //strings
+"#{3.1415926}"      //numeric values (double)
+"#{true}"           //boolean
+"#{null}"           //null
+
+// Inline list
+"#{1,2,3,4}"                //list of number
+"#{'a','b'},{'x','y'}}"    //list of list
+
+// Inline maps
+"#{name:'Nikola',dob:'10-July-1856'}"
+"#{name:{first:'Nikola',last:'Tesla'},dob:{day:10,month:'July',year:1856}}" //map of maps
+
+// Invoking Methods
+"#{'abc'.length()}" //evaluates to 3
+"#{say('hello')}"   //'say' is a method in the class and it has a string parameter
 ```
 
 - [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/beans/factory/annotation/Value.html)
 
-- [A Quick Guide to Spring @Value](https://www.baeldung.com/spring-value-annotation)
+- [A Quick Guide to Spring @Value - Baeldung](https://www.baeldung.com/spring-value-annotation)
+
+- [Using @Value - Spring Framework](https://docs.spring.io/spring-framework/reference/core/beans/annotation-config/value-annotations.html)
+
+- [Spring Expression Language (SpEL) - Spring Framework](https://docs.spring.io/spring-framework/reference/core/expressions.html)
 
 #### @DependsOn
 
@@ -204,13 +261,13 @@ Engine engine() {
 
 #### @Lazy
 
-La anotación `@Lazy` se utiliza cuando queremos inicializar un bean de forma diferida. De forma predeterminada, Spring crea todos los beans singleton al inicio/arranque del contexto de la aplicación.
+La anotación `@Lazy` se utiliza cuando queremos inicializar un bean de forma diferida. De forma predeterminada, Spring crea todos los beans _singleton_ al inicio/arranque del contexto de la aplicación.
 
-Sin embargo, hay casos en los que necesitamos crear un bean cuando se solicita solicitamos, no al iniciar la aplicación.
+Sin embargo, hay casos en los que necesitamos crear un bean cuando se solicita, no al iniciar la aplicación.
 
-Esta anotación tiene un argumento con el valor predeterminado de verdadero. Es útil para anular el comportamiento predeterminado.
+Esta anotación tiene un argumento con el valor predeterminado de 'true'. Es útil para anular el comportamiento predeterminado.
 
-Por ejemplo, marcar beans para que se carguen inmediatamente cuando la configuración global es diferida, o configurar métodos específicos de `@Bean` para carga inmediata en una clase `@Configuration` marcada con @Lazy:
+Por ejemplo, marcar beans para que se carguen inmediatamente cuando la configuración global es diferida, o configurar métodos específicos de `@Bean` para carga inmediata en una clase `@Configuration` marcada con `@Lazy`:
 
 ```java
 @Configuration
@@ -297,9 +354,19 @@ Si queremos que Spring use una clase `@Component` o un método `@Bean` solo cuan
 class Bike implements Vehicle {}
 ```
 
+Para activar un perfil, se puede hacer de varias maneras. La más común sería usando propiedades de configuración (_"application.properties"_ o _"application.yml"_). Se pueden definir varios perfiles separándolos con comas:
+
+```txt
+spring.profiles.active=dev,feature-x
+```
+
 - [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Profile.html)
 
-- [Spring Profiles](https://www.baeldung.com/spring-profiles)
+- [Spring Profiles - Baeldung](https://www.baeldung.com/spring-profiles)
+
+- [Environment Abstraction - Spring Framework](https://docs.spring.io/spring-framework/reference/core/beans/environment.html)
+
+- [Profiles - Spring Boot](https://docs.spring.io/spring-boot/reference/features/profiles.html)
 
 #### @Import
 
