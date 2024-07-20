@@ -44,37 +44,66 @@ class Car {
 }
 ```
 
-A partir de la versión 4.3, no es necesario anotar constructores con `@Autowired` de forma explícita a menos que se haya declarado al menos dos constructores.
+A partir de la versión 4.3, no es necesario anotar constructores con `@Autowired` de forma explícita. Sin embargo, si hay dos o más contructores sigue siendo necesario para que Spring sepa cuál de ellos debe utilizar.
+
+Si se utiliza la inyección del constructor, **todos los argumentos del constructor son obligatorios**.
 
 ```java
-// Setter injection
-class Car {
-  Engine engine;
+// MyService.java
+package com.example.demo;
 
-  @Autowired
-  void setEngine(Engine engine) {
-    this.engine = engine;
-  }
-}
-``
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-```java`
-// Field injection
-class Car {
-  @Autowired
-  Engine engine;
+@Service
+public class MyService {
+
+    // Inyección por campo
+    @Autowired
+    private Dependency1 dependency1;
+
+    private Dependency2 dependency2;
+
+    // Inyección por constructor
+    @Autowired
+    public MyService(Dependency2 dependency2) {
+        this.dependency2 = dependency2;
+    }
+
+    // Inyección por setter
+    @Autowired
+    public void setDependency1(Dependency1 dependency1) {
+        this.dependency1 = dependency1;
+    }
+
+    public void printMessages() {
+        System.out.println("Dependency1: " + dependency1.getMessage());
+        System.out.println("Dependency2: " + dependency2.getMessage());
+    }
 }
 ```
 
 `@Autowired` tiene un argumento booleano llamado `required` con un valor predeterminado de `true`. Este argumento ajusta el comportamiento de Spring cuando no encuentra un bean adecuado para conectar. Cuando es verdadero, se lanzará una excepción; de lo contrario, no se conecta nada.
 
-Si se utiliza la inyección del constructor, **todos los argumentos del constructor son obligatorios**.
+**NOTA**: puedes utilizarse `@Inject` en lugar de `@Autowired` en Spring Framework. `@Inject` es parte de la especificación estándar de Jakarta EE/CDI, mientras que `@Autowired` es específico de Spring y ofrece funcionalidades adicionales. Para poder utilizar esta anotación, hay que añadir la dependencia al `pom.xml`:
+
+```xml
+<dependency>
+    <groupId>jakarta.inject</groupId>
+    <artifactId>jakarta.inject-api</artifactId>
+    <version>2.0.0</version>
+</dependency>
+```
 
 - [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/beans/factory/annotation/Autowired.html)
 
-- [Guide to Spring @Autowired](https://www.baeldung.com/spring-autowire)
+- [Guide to Spring @Autowired - Baeldung](https://www.baeldung.com/spring-autowire)
 
-- [Constructor Dependency Injection in Spring](https://www.baeldung.com/constructor-injection-in-spring)
+- [Constructor Dependency Injection in Spring - Baeldung](https://www.baeldung.com/constructor-injection-in-spring)
+
+- [Using @Autowired - Spring Framework](https://docs.spring.io/spring-framework/reference/core/beans/annotation-config/autowired.html)
+
+- [Using JSR 330 Standard Annotations - Spring Framework](https://docs.spring.io/spring-framework/reference/core/beans/standard-annotations.html)
 
 #### @Bean
 
@@ -203,6 +232,8 @@ public class MovieRecommender {
     }
 }
 ```
+
+##### Lenguaje de Expresiones SpEl
 
 Cuando `@Value("#{expression}")` contiene una expresión SpEL, el valor se calculará dinámicamente en tiempo de ejecución.
 
