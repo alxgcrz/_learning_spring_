@@ -282,6 +282,14 @@ Cuando `@Value("#{expression}")` contiene una expresión SpEL, el valor se calcu
 // Invoking Methods
 "#{'abc'.length()}" //evaluates to 3
 "#{say('hello')}"   //'say' is a method in the class and it has a string parameter
+
+// Invoking Methods from another bean
+"#{otherBean}"          // Bind a bean
+"#{otherBean.property}" // Property from bean
+"#{otherBean.method()}" // Invoke method from bean
+
+// Seguridad de tipos con el operador ?.
+"#{otherBean?.property}" // Antes de acceder a property se valida que otherBean != null
 ```
 
 - [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/beans/factory/annotation/Value.html)
@@ -568,7 +576,7 @@ public class AppConfig {
 }
 ```
 
-Estos archivos contienen configuraciones como URLs de bases de datos, rutas de archivos, configuraciones de conexión, etc.
+Estos archivos contienen configuraciones como URLs de bases de datos, rutas de archivos, configuraciones de conexión, etc. Los archivos en `src/main/resources` se incluyen en el **classpath** durante la construcción del proyecto, además de de todas las dependencias incluidas con Maven o Gradle.
 
 Las propiedades cargadas se integran con el `Environment` de Spring, lo que permite acceder a ellas desde cualquier parte de la aplicación:
 
@@ -585,12 +593,32 @@ public class MyComponent {
 
     public void someMethod() {
         String dbUrl = env.getProperty("database.url");
-        // Utilizar la propiedad dbUrl...
+        // Default value
+        String user = env.getProperty("database.user", "userByDefault");
+        // Convertir un valor a int
+        int connectionCount = env.getProperty("database.count", Integer.class, 30);
+        // ...
     }
 }
 ```
 
-`@PropertySource` aprovecha la función de anotaciones repetidas de Java 8, lo que significa que podemos marcar una clase con ella varias veces:
+El objeto `Environment` siempre se crea en Spring y está disponible en el contexto de la aplicación, independientemente de si hay archivos de propiedades adicionales. Spring configura un Environment básico como parte de su infraestructura central.
+
+El `Environment` puede contener propiedades predeterminadas proporcionadas por Spring, como valores de **configuración de la JVM** (como `java.home`) o **propiedades del sistema**.
+
+Además, se pueden consultar los perfiles activos y el perfil actual del entorno utilizando este objeto. Esto es útil para ajustar el comportamiento de la aplicación según el perfil activo.
+
+Otra forma de acceder a una propiedad podría ser utilizar directamente la anotación [`@Value`](#value):
+
+```java
+@Component
+public class MyComponent {
+    @Value("${database.url}")
+    private String dbUrl;
+}
+```
+
+La anotación `@PropertySource` aprovecha la función de anotaciones repetidas de Java 8, lo que significa que podemos marcar una clase con ella varias veces:
 
 ```java
 @Configuration
@@ -599,7 +627,13 @@ public class MyComponent {
 class VehicleFactoryConfig {}
 ```
 
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/PropertySource.html)
+En caso de **conflicto de claves**, prevalecerá el **último fichero cargado**, es decir, el último fichero sobreescribe el valor de la clave si en ambos ficheros hay una clave repetida.
+
+- [Javadoc - @PropertySource](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/PropertySource.html)
+
+- [Javadoc - Environment](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/core/env/Environment.html)
+
+- [Resources](https://docs.spring.io/spring-framework/reference/core/resources.html#resources-introduction)
 
 #### @PropertySources
 
@@ -617,6 +651,104 @@ class VehicleFactoryConfig {}
 Tenga en cuenta que desde Java 8 se puede lograr el mismo resultado con la función de anotaciones repetidas.
 
 - [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/PropertySources.html)
+
+#### @ConfigurationProperties
+
+La anotación `@ConfigurationProperties` es una anotación en Spring Boot que permite mapear propiedades externas (generalmente de archivos `.properties` o `.yaml`) a un objeto Java. Esta anotación simplifica la configuración al proporcionar una manera **estructurada y tipada** para acceder a las propiedades en una aplicación Spring.
+
+La anotación `@ConfigurationProperties` acepta un prefijo que indica qué propiedades del archivo se deben mapear a esta clase.
+
+Para que Spring reconozca y cargue las propiedades en la clase, se debe habilitar el soporte para `@ConfigurationProperties` en tu configuración de Spring. Esto se hace normalmente con la anotación `@EnableConfigurationProperties` en una clase de configuración:
+
+```java
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+@EnableConfigurationProperties(AppProperties.class)
+public class AppConfig {
+    // Otras configuraciones
+}
+```
+
+Por ejemplo, un archivo de propiedades llamado `application.properties`:
+
+```txt
+app.name=MyApp
+app.version=1.0.0
+app.features.enabled=true
+```
+
+El prefijo "app" coincide con el prefijo de las claves. Esta sería la clase de propiedades:
+
+```java
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
+
+@Component
+@ConfigurationProperties(prefix = "app")
+public class AppProperties {
+
+    private String name;
+    private String version;
+    private boolean featuresEnabled;
+
+    // Getters y setters
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    public boolean isFeaturesEnabled() {
+        return featuresEnabled;
+    }
+
+    public void setFeaturesEnabled(boolean featuresEnabled) {
+        this.featuresEnabled = featuresEnabled;
+    }
+}
+```
+
+Y su uso en un componente:
+
+```java
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class AppService {
+
+    private final AppProperties appProperties;
+
+    @Autowired
+    public AppService(AppProperties appProperties) {
+        this.appProperties = appProperties;
+    }
+
+    public void printProperties() {
+        System.out.println("App Name: " + appProperties.getName());
+        System.out.println("App Version: " + appProperties.getVersion());
+        System.out.println("Features Enabled: " + appProperties.isFeaturesEnabled());
+    }
+}
+```
+
+- [Javadoc](https://docs.spring.io/spring-boot/api/java/org/springframework/boot/context/properties/ConfigurationProperties.html)
+
+- [Using Environment Variables in Spring Boot’s Properties Files - Baeldung](https://www.baeldung.com/spring-boot-properties-env-variables)
+
+- [Configuring System Environment Properties - Spring Boot](https://docs.spring.io/spring-boot/reference/features/external-config.html#features.external-config.system-environment)
 
 ---
 
@@ -1787,7 +1919,7 @@ Spring buscará repositorios en los subpaquetes de esta clase `@Configuration`. 
 class MongoConfig {}
 ```
 
-Spring Boot hace esto automáticamente si encuentra **Spring Data MongoDB en el classpath**.
+Spring Boot hace esto automáticamente si encuentra **Spring Data MongoDB en el classpath**, es decir, si se ha incluido como dependencia.
 
 ## [Spring Bean Annotations](https://www.baeldung.com/spring-bean-annotations)
 
