@@ -30,7 +30,7 @@ Estas anotaciones forman parte del paquete [org.springframework.beans.factory.an
 
 #### @Autowired
 
-La anotación `@Autowired` se utiliza para marcar una dependencia que el motor DI de Spring resolverá e inyectará. Esta anotación se puede usar en un **constructor**, en un **método _'setter'_** o en un **campo**:
+La anotación `@Autowired` se utiliza para marcar una dependencia que **el motor DI de Spring resolverá e inyectará**. Esta anotación se puede usar en un **constructor**, en un **método _'setter'_** o en un **campo**:
 
 ```java
 // Constructor injection
@@ -83,9 +83,16 @@ public class MyService {
 }
 ```
 
-`@Autowired` tiene un argumento booleano llamado `required` con un valor predeterminado de `true`. Este argumento ajusta el comportamiento de Spring cuando no encuentra un bean adecuado para conectar. Cuando es verdadero, se lanzará una excepción; de lo contrario, no se conecta nada.
+`@Autowired` tiene un argumento booleano llamado `required` con un valor predeterminado de `true`. Este argumento ajusta el comportamiento de Spring cuando no encuentra un _bean_ adecuado para conectar. Cuando es verdadero, se lanzará una excepción si no encuentra el _bean_; de lo contrario, no se conecta nada. Sin embargo, se recomienda dejar el valor a `true`(predeterminado) para evitar excepciones de puntero nulo al no estar inicializado el _bean_ y ser utilizado en el código.
 
-**NOTA**: puedes utilizarse `@Inject` en lugar de `@Autowired` en Spring Framework. `@Inject` es parte de la especificación estándar de Jakarta EE/CDI, mientras que `@Autowired` es específico de Spring y ofrece funcionalidades adicionales. Para poder utilizar esta anotación, hay que añadir la dependencia al `pom.xml`:
+```java
+@Autowired(required=false)
+public MyService(Dependency2 dependency2) {
+    this.dependency2 = dependency2;
+}
+```
+
+Puede utilizarse `@Inject` en lugar de `@Autowired` en Spring Framework. `@Inject` (y `@Named`) es parte de la especificación estándar [JSR-330](https://docs.spring.io/spring-framework/reference/core/beans/standard-annotations.html) de Jakarta EE/CDI, mientras que `@Autowired` es específico de Spring y ofrece funcionalidades adicionales. Para poder utilizar esta anotación, hay que añadir la dependencia al `pom.xml` o al `build.gradle`:
 
 ```xml
 <dependency>
@@ -107,7 +114,7 @@ public class MyService {
 
 #### @Bean
 
-La anotación `@Bean` marca un _'factory method'_ que crea una instancia de un _bean_ de Spring:
+La anotación `@Bean` marca un _'factory method'_ que crea una instancia de un _bean_ de Spring y que se registrará en el contexto de aplicación de Spring:
 
 ```java
 @Configuration
@@ -119,9 +126,11 @@ public class AppConfiguration {
 }
 ```
 
-**Spring llama a estos métodos** cuando se requiere una nueva instancia del tipo de retorno.
+**Spring llama a estos métodos** cuando se requiere una instancia del tipo de retorno.
 
-El bean resultante tiene el mismo nombre que el _'factory method'_. Si se requiere que tenga un nombre diferente, se puede hacer con el nombre o los argumentos de valor de esta anotación (el valor del argumento es un alias para el nombre del argumento):
+El bean resultante por defecto tiene el mismo nombre que el _'factory method'_. Si se requiere que tenga un nombre diferente, se puede proporcionar un nombre explícito como argumento `name` de la anotación o mediante un alias. Además, se pueden indicar varios nombres que pueden ser utilizados de forma indistinta:
+
+hacer con el nombre o los argumentos de valor de esta anotación (el valor del argumento es un alias para el nombre del argumento):
 
 ```java
 @Configuration
@@ -130,6 +139,16 @@ public class AppConfiguration {
   public Engine getEngine() {
     return new Engine();
   }
+
+  @Bean(name = "vehicle")
+  public Vehicle getVehicle() {
+    return new Vehicle();
+  }
+
+  @Bean(name = {"car", "truck"})
+  public Vehicle getVehicle() {
+    return new Vehicle();
+  }
 }
 ```
 
@@ -137,9 +156,15 @@ Hay que tener en cuenta que **todos los métodos anotados con `@Bean` deben esta
 
 - [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Bean.html)
 
+- [Bean Overview - Spring Framework](https://docs.spring.io/spring-framework/reference/core/beans/definition.html)
+
+- [Basic Concepts: @Bean and @Configuration - Spring Framework](https://docs.spring.io/spring-framework/reference/core/beans/java/basic-concepts.html)
+
+- [Using the @Configuration annotation - Spring Framework](https://docs.spring.io/spring-framework/reference/core/beans/java/configuration-annotation.html)
+
 #### @Qualifier
 
-Se usa la anotación `@Qualifier` junto con `@Autowired` para proporcionar la **identificación del bean** o el **nombre del bean** que se debe usar, sobretodo en situaciones ambiguas.
+Se usa la anotación `@Qualifier` junto con `@Autowired` para proporcionar la **identificación del _bean_** o el **nombre del _bean_** que se debe usar, sobretodo en situaciones ambiguas.
 
 ```java
 class Bike implements Vehicle {}
@@ -147,7 +172,7 @@ class Bike implements Vehicle {}
 class Car implements Vehicle {}
 ```
 
-En caso de ambigüedad, se utiliza `@Qualifier` para indicar a Spring **el bean a inyectar**:
+En caso de ambigüedad, se utiliza `@Qualifier` para indicar a Spring **el _bean_ a inyectar**:
 
 ```java
 // Using constructor injection
@@ -175,6 +200,8 @@ Vehicle vehicle;
 ```
 
 - [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/beans/factory/annotation/Qualifier.html)
+
+- [Fine-tuning Annotation-based Autowiring with Qualifiers - Spring Framework](https://docs.spring.io/spring-framework/reference/core/beans/annotation-config/autowired-qualifiers.html#page-title)
 
 #### @Value
 
@@ -327,11 +354,11 @@ Un método anotado con `@Lookup` le indica a Spring que devuelva una instancia d
 
 #### @Primary
 
-A veces necesitamos definir **múltiples beans del mismo tipo**. En estos casos, la inyección no tendrá éxito porque Spring no sabe qué bean necesitamos.
+A veces se necesita definir **múltiples _beans_ del mismo tipo**. En estos casos, la inyección no tendrá éxito porque Spring no sabe qué _bean_ necesitamos.
 
-Ya vimos una opción para manejar este escenario: marcar todos los puntos de conexión con `@Qualifier` y especificar el nombre del bean requerido.
+Una opción para manejar este escenario es marcar todos los puntos de conexión con `@Qualifier` y especificar el nombre del _bean_ requerido.
 
-Sin embargo, la mayoría de las veces necesitamos un bean específico y rara vez los otros. Podemos usar `@Primary` para simplificar este caso: si marcamos el bean usado más frecuentemente con `@Primary`, será elegido en los puntos de inyección no calificados:
+Sin embargo, la mayoría de las veces se necesita un _bean_ específico y rara vez los otros. SE puede emplear `@Primary` para simplificar este caso: si se marca el _bean_ usado más frecuentemente con `@Primary`, será elegido en los puntos de inyección no calificados:
 
 ```java
 @Component
@@ -355,23 +382,41 @@ class Biker {
 }
 ```
 
-En el ejemplo anterior, _'Car'_ es el vehículo principal. Por lo tanto, en la clase _'Driver'_, Spring inyecta un bean de tipo _'Car'_. Por supuesto, en el bean _'Biker'_, el valor del campo '_vehicle'_ será un objeto de tipo _'Bike'_ porque está calificado.
+En el ejemplo anterior, _'Car'_ es el vehículo principal. Por lo tanto, en la clase _'Driver'_, Spring inyecta un _bean_ de tipo _'Car'_. Por supuesto, en el _bean_ _'Biker'_, el valor del campo '_vehicle'_ será un objeto de tipo _'Bike'_ porque está calificado.
 
 - [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Primary.html)
 
+- [Fine-tuning Annotation-based Autowiring with Qualifiers - Spring Framework](https://docs.spring.io/spring-framework/reference/core/beans/annotation-config/autowired-qualifiers.html#page-title)
+
 #### @Scope
 
-Usamos `@Scope` para definir el ámbito de una clase `@Component` o una definición de `@Bean`. Puede ser **_singleton_**, **_prototype_**, **_request_**, **_session_**, **_globalSession_** o algún ámbito personalizado.
+Usamos `@Scope` para definir el ámbito de una clase `@Component` o una definición de `@Bean`. Los ámbitos pueden ser:
+
+- **_singleton_** - [ConfigurableBeanFactory.SCOPE_SINGLETON](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/beans/factory/config/ConfigurableBeanFactory.html#SCOPE_SINGLETON)
+
+- **_prototype_** - [ConfigurableBeanFactory.SCOPE_PROTOTYPE](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/beans/factory/config/ConfigurableBeanFactory.html#SCOPE_PROTOTYPE)
+
+- **_request_** - [WebApplicationContext.SCOPE_REQUEST](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/context/WebApplicationContext.html#SCOPE_REQUEST)
+
+- **_session_** - [WebApplicationContext.SCOPE_SESSION](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/context/WebApplicationContext.html#SCOPE_SESSION)
+
+- **_application_** - [WebApplicationContext.SCOPE_APPLICATION](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/context/WebApplicationContext.html#SCOPE_APPLICATION)
+
+- **_websocket_**
+
+- **ámbito personalizado**
 
 ```java
 @Component
-@Scope("prototype")
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 class Engine {}
 ```
 
-**El ámbito por defecto es 'singleton'**. Esto significa que Spring crea una única instancia del bean y la reutiliza en toda la aplicación.
+**El ámbito por defecto es 'singleton'**. Esto significa que Spring crea una única instancia del bean en el contexto de la aplicación y la reutiliza en toda la aplicación. Por tanto, independientemente de cúantas veces se inyecte un _bean_, Spring inyecta la misma instancia.
 
 - [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Scope.html)
+
+- [Bean Scopes - Spring Framework](https://docs.spring.io/spring-framework/reference/core/beans/factory-scopes.html)
 
 ### Context Configuration Annotations
 
@@ -385,11 +430,39 @@ Si queremos que Spring use una clase `@Component` o un método `@Bean` solo cuan
 class Bike implements Vehicle {}
 ```
 
-Para activar un perfil, se puede hacer de varias maneras. La más común sería usando propiedades de configuración (_"application.properties"_ o _"application.yml"_). Se pueden definir varios perfiles separándolos con comas:
+Si se utiliza a nivel de clase en una clase de configuración por ejemplo, todos los _beans_ se cargarán con ese perfil. Sin embargo, puede combinarse la anotación a nivel de clase y a nivel de método en la misma clase:
+
+```java
+@Configuration
+@Profile("dev")
+public class MixedConfig {
+
+    // Se carga con el perfil "dev"
+    @Bean
+    public MyBean myDevBean() {
+        return new MyBean("Dev Bean");
+    }
+
+    // Se carga con el perfil "test"
+    @Bean
+    @Profile("test")
+    public AnotherBean anotherTestBean() {
+        return new AnotherBean("Another Test Bean");
+    }
+}
+```
+
+Para activar un perfil, se puede hacer de varias maneras. La más común sería usando las propiedades de configuración `spring.profiles.active` y/o `spring.profiles.default` en _"application.properties"_ o _"application.yml"_. Se pueden definir varios perfiles separándolos con comas:
 
 ```txt
+// Determina los perfiles activos
 spring.profiles.active=dev,feature-x
+
+// Si no hay perfiles activos, Spring se fija en el perfil por defecto
+spring.profiles.default=prod
 ```
+
+Si no se establece ninguna de las dos propiedades, no habrá perfiles activos y **Spring sólo crea los beans que no tengan perfil**.
 
 - [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Profile.html)
 
@@ -398,6 +471,33 @@ spring.profiles.active=dev,feature-x
 - [Environment Abstraction - Spring Framework](https://docs.spring.io/spring-framework/reference/core/beans/environment.html)
 
 - [Profiles - Spring Boot](https://docs.spring.io/spring-boot/reference/features/profiles.html)
+
+#### @ActiveProfiles
+
+Spring dispone de la anotación `@ActiveProfiles`, que es una anotación compatible con JUnit 5, para declarar los perfiles activos a usar cuando se carga un contexto de aplicación en las clases de prueba.
+
+Entonces, si anotamos una clase de prueba con la anotación `@ActiveProfiles` y establecemos el atributo `value` a `test`, todas las pruebas en la clase usarán el perfil `test`:
+
+```java
+@SpringBootTest(classes = ActiveProfileApplication.class)
+@ActiveProfiles(value = "test")
+public class TestActiveProfileUnitTest {
+
+    @Value("${profile.property.value}")
+    private String propertyString;
+
+    @Test
+    void whenTestIsActive_thenValueShouldBeKeptFromApplicationTestYaml() {
+        Assertions.assertEquals("This the the application-test.yaml file", propertyString);
+    }
+}
+```
+
+- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/test/context/ActiveProfiles.html)
+
+- [@ActiveProfiles - Spring Framework](https://docs.spring.io/spring-framework/reference/testing/annotations/integration-spring/annotation-activeprofiles.html#page-title)
+
+- [Execute Tests Based on Active Profile With JUnit 5 - Baeldung](https://www.baeldung.com/spring-boot-junit-5-testing-active-profile)
 
 #### @Import
 
@@ -439,7 +539,7 @@ Aquí, _'MyUtilityClass'_ y _'AnotherHelper'_ son clases normales que no necesar
 
 #### @ImportResource
 
-Podemos importar configuraciones XML con esta anotación. Podemos especificar las ubicaciones de los archivos XML utilizando un argumento en la anotación:
+Podemos importar **configuraciones XML** con esta anotación. Podemos especificar las ubicaciones de los archivos XML utilizando un argumento en la anotación:
 
 ```java
 @Configuration
@@ -1052,19 +1152,17 @@ En el contexto de Spring Framework, las condiciones de auto-configuración (`@Co
 
 Estas condiciones se utilizan ampliamente en la auto-configuración automática de Spring Boot y en la configuración personalizada de aplicaciones Spring ya que permiten una configuración modular y flexible de aplicaciones Spring, adaptándose dinámicamente según el entorno y las condiciones del sistema.
 
-Spring proporciona diversas condiciones predefinidas que listas para utilizar.
+Spring proporciona **diversas condiciones predefinidas** listas para ser utilizadas.
 
 Estas anotaciones de configuración se pueden colocar en clases `@Configuration` o métodos `@Bean`.
 
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Conditional.html)
+- [Creating Your Own Auto-configuration - Spring Boot](https://docs.spring.io/spring-boot/reference/features/developing-auto-configuration.html)
 
-- [Create a Custom Auto-Configuration with Spring Boot](https://www.baeldung.com/spring-boot-custom-auto-configuration)
-
-- [Creating Your Own Auto-configuration](https://docs.spring.io/spring-boot/reference/features/developing-auto-configuration.html)
+- [Create a Custom Auto-Configuration with Spring Boot - Baeldung](https://www.baeldung.com/spring-boot-custom-auto-configuration)
 
 #### @Conditional
 
-La anotación `@Conditional` se utiliza para aplicar una condición a un componente de Spring, como un bean o una configuración, para que solo se active si la condición especificada se cumple en tiempo de ejecución:
+La anotación `@Conditional` se utiliza para aplicar una condición a un componente de Spring, como un _bean_ o una configuración, para que solo se active si la condición especificada se cumple en tiempo de ejecución:
 
 ```java
 @Configuration
@@ -1074,9 +1172,11 @@ public class ProductionConfiguration {
 }
 ```
 
+- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Conditional.html)
+
 #### @ConditionalOnClass and @ConditionalOnMissingClass
 
-Usando estas condiciones, Spring solo usará el bean de configuración automática marcado si la clase en el argumento de la anotación está presente/ausente:
+Usando estas condiciones, Spring solo usará el _bean_ de configuración automática marcado si la clase en el argumento de la anotación está presente/ausente:
 
 ```java
 @Configuration
@@ -1086,9 +1186,13 @@ class MySQLAutoconfiguration {
 }
 ```
 
+- [Javadoc - @ConditionalOnClass](https://docs.spring.io/spring-boot/api/java/org/springframework/boot/autoconfigure/condition/ConditionalOnClass.html)
+
+- [Javadoc - @ConditionalOnMissingClass](https://docs.spring.io/spring-boot/api/java/org/springframework/boot/autoconfigure/condition/ConditionalOnMissingClass.html)
+
 #### @ConditionalOnBean and @ConditionalOnMissingBean
 
-Podemos usar estas anotaciones cuando queramos definir condiciones basadas en la presencia o ausencia de un bean específico:
+Podemos usar estas anotaciones cuando queramos definir condiciones basadas en la presencia o ausencia de un _bean_ específico:
 
 ```java
 @Bean
@@ -1097,6 +1201,10 @@ LocalContainerEntityManagerFactoryBean entityManagerFactory() {
     // ...
 }
 ```
+
+- [Javadoc - @ConditionalOnBean](https://docs.spring.io/spring-boot/api/java/org/springframework/boot/autoconfigure/condition/ConditionalOnBean.html)
+
+- [Javadoc - @ConditionalOnMissingBean](https://docs.spring.io/spring-boot/api/java/org/springframework/boot/autoconfigure/condition/ConditionalOnMissingBean.html)
 
 #### @ConditionalOnProperty
 
@@ -1113,6 +1221,8 @@ DataSource dataSource() {
 }
 ```
 
+- [Javadoc - @ConditionalOnProperty](https://docs.spring.io/spring-boot/api/java/org/springframework/boot/autoconfigure/condition/ConditionalOnProperty.html)
+
 #### @ConditionalOnResource
 
 Podemos hacer que Spring use una definición solo cuando un recurso específico esté presente:
@@ -1123,6 +1233,8 @@ Properties additionalProperties() {
     // ...
 }
 ```
+
+- [Javadoc - @ConditionalOnResource](https://docs.spring.io/spring-boot/api/java/org/springframework/boot/autoconfigure/condition/ConditionalOnResource.html)
 
 #### @ConditionalOnWebApplication and @ConditionalOnNotWebApplication
 
@@ -1135,7 +1247,11 @@ HealthCheckController healthCheckController() {
 }
 ```
 
-#### @ConditionalExpression
+- [Javadoc - @ConditionalOnWebApplication](https://docs.spring.io/spring-boot/api/java/org/springframework/boot/autoconfigure/condition/ConditionalOnWebApplication.html)
+
+- [Javadoc - @ConditionalOnNotWebApplication](https://docs.spring.io/spring-boot/api/java/org/springframework/boot/autoconfigure/condition/ConditionalOnNotWebApplication.html)
+
+#### @ConditionalOnExpression
 
 Podemos utilizar esta anotación en situaciones más complejas. Spring usará la definición marcada cuando la expresión SpEL se evalúe como verdadera:
 
@@ -1146,6 +1262,8 @@ DataSource dataSource() {
     // ...
 }
 ```
+
+- [Javadoc - @ConditionalOnExpression](https://docs.spring.io/spring-boot/api/java/org/springframework/boot/autoconfigure/condition/ConditionalOnExpression.html)
 
 ## [Spring Scheduling Annotations](https://www.baeldung.com/spring-scheduling-annotations)
 
@@ -1867,7 +1985,7 @@ public class VehicleController {
 
 ### @Configuration
 
-Las clases de configuración pueden contener **métodos de definición de _beans_** anotados con `@Bean`:
+Las clases de configuración contienen **métodos de definición de _beans_** anotados con `@Bean`:
 
 ```java
 @Configuration
@@ -1884,6 +2002,10 @@ class VehicleFactoryConfig {
 Esta anotación `@Configuration` es una **meta-anotación** o especialización de `@Component` que se utiliza para definir una clase de configuración en Spring. Las clases anotadas con `@Configuration` son utilizadas para definir _beans_ en el contexto de la aplicación y además, son consideradas en sí mismas como _beans_.
 
 - [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Configuration.html)
+
+- [Basic Concepts: @Bean and @Configuration - Spring Framework](https://docs.spring.io/spring-framework/reference/core/beans/java/basic-concepts.html)
+
+- [Using the @Configuration annotation - Spring Framework](https://docs.spring.io/spring-framework/reference/core/beans/java/configuration-annotation.html)
 
 ---
 
