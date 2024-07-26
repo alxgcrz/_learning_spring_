@@ -658,7 +658,7 @@ La anotación `@ConfigurationProperties` es una anotación en Spring Boot que pe
 
 La anotación `@ConfigurationProperties` acepta un prefijo que indica qué propiedades del archivo se deben mapear a esta clase.
 
-Para que Spring reconozca y cargue las propiedades en la clase, se debe habilitar el soporte para `@ConfigurationProperties` en tu configuración de Spring. Esto se hace normalmente con la anotación `@EnableConfigurationProperties` en una clase de configuración:
+Para que Spring reconozca y cargue las propiedades en la clase, se debe **habilitar el soporte** para `@ConfigurationProperties` en tu configuración de Spring. Esto se hace normalmente con la anotación `@EnableConfigurationProperties` en una clase de configuración:
 
 ```java
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -2138,6 +2138,115 @@ Esta anotación `@Configuration` es una **meta-anotación** o especialización d
 - [Basic Concepts: @Bean and @Configuration - Spring Framework](https://docs.spring.io/spring-framework/reference/core/beans/java/basic-concepts.html)
 
 - [Using the @Configuration annotation - Spring Framework](https://docs.spring.io/spring-framework/reference/core/beans/java/configuration-annotation.html)
+
+## [Spring AOP](https://docs.spring.io/spring-framework/reference/core/aop.html)
+
+La **Programación Orientada a Aspectos (AOP)** es un paradigma de programación que se enfoca en separar las preocupaciones transversales del núcleo de la lógica del negocio.
+
+AOP es muy útil para **modularizar funcionalidades que se repiten** en diferentes partes de una aplicación, como la gestión de transacciones, el registro (logging), la seguridad, y el manejo de excepciones.
+
+### Conceptos de AOP
+
+- **Aspecto (Aspect)**
+
+  Un aspecto es un módulo que encapsula una preocupación transversal. En términos simples, es **una clase que contiene la lógica** para una funcionalidad transversal, como el registro de auditoría o la seguridad.
+
+- **Intercepción (Advice)**
+
+  Un advice es **la acción que un aspecto realiza en un punto específico** en el programa. Es el código que se ejecuta cuando se encuentra un punto de unión. Los tipos comunes de advice son:
+
+  - **`Before`**: Se ejecuta antes de que el método objetivo sea llamado.
+
+  - **`After`**: Se ejecuta después de que el método objetivo ha sido llamado, independientemente de su resultado.
+
+  - **`After Returning`**: Se ejecuta después de que el método objetivo retorna un resultado.
+
+  - **`After Throwing`**: Se ejecuta si el método objetivo lanza una excepción.
+
+  - **`Around`**: Envuelve la ejecución del método objetivo, permitiendo realizar acciones antes y después de que se llame al método.
+
+- **Punto de Unión (Join Point)**
+
+  Un punto de unión es un punto en la ejecución del programa, como la invocación de un método o la ejecución de un bloque de código **donde se podría aplicar el aspecto**. En Spring AOP, los puntos de unión son principalmente las invocaciones de métodos.
+
+- **Corte Transversal (Pointcut)**
+
+  Un pointcut es una **expresión** que selecciona uno o más puntos de unión donde un advice debería ejecutarse. Define el **lugar exacto** en el código donde se aplica un aspecto. Por ejemplo, puedes definir un pointcut para todos los métodos en una clase específica o para métodos con un nombre particular.
+
+- **Objeto de Intercepción (Proxy)**
+
+  En AOP, un proxy es un objeto creado en tiempo de ejecución que intercepta las llamadas a los métodos de un objeto objetivo para aplicar el advice. Los proxies permiten que los aspectos se apliquen sin modificar el código original del objeto.
+
+- **Objetivo (Target Object)**
+
+  El objeto objetivo es el objeto cuyo método está siendo interceptado. Es el objeto en el que se aplican los aspectos.
+
+### Implementación de AOP en Spring
+
+**Spring AOP** es el framework de Spring para la programación orientada a aspectos. Utiliza **proxies dinámicos** para implementar la AOP en tiempo de ejecución y se integra perfectamente con otros componentes de Spring.
+
+Spring AOP es una implementación de AOP más **simple y centrada** en las necesidades más comunes de los desarrolladores de aplicaciones empresariales.
+
+Algunos elementos clave de Spring AOP:
+
+- Spring AOP se puede usar con AspectJ. Este es un framework de AOP completo para Java que permite la programación orientada a aspectos. Ofrece más funcionalidades que Spring AOP.
+
+- Utiliza **proxies dinámicos** para aplicar aspectos en tiempo de ejecución. Esto significa que solo puede aplicar aspectos a los _beans_ de Spring y solo a métodos públicos.
+
+- Se centra en aspectos que se aplican **antes, después o alrededor** de la ejecución de métodos.
+
+- Se pueden utilizar varias **anotaciones** para definir aspectos y _advice_, como `@Aspect`, `@Before`, `@After`, `@Around`, etc. Estas anotaciones son proporcionadas por AspectJ. Spring interpreta estas anotaciones con la ayuda de la biblioteca de AspectJ pero la implementación en tiempo de ejecución sigue siendo Spring AOP.
+
+- Los aspectos pueden configurarse utilizando XML o la configuración basada en anotaciones.
+
+Definición de un aspecto de ejemplo en **Spring AOP**:
+
+```java
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
+import org.springframework.stereotype.Component;
+
+@Aspect
+@Component
+public class LoggingAspect {
+
+    @Before("execution(* com.example.service.*.*(..))")
+    public void logBeforeMethod() {
+        System.out.println("Logging before method execution");
+    }
+}
+```
+
+### [@AspectJ support](https://docs.spring.io/spring-framework/reference/core/aop/ataspectj.html)
+
+**@AspectJ** se refiere a un estilo de declaración de aspectos como clases Java normales anotadas con anotaciones. El estilo **@AspectJ** fue introducido por el proyecto AspectJ como parte de la versión AspectJ 5. Spring interpreta las mismas anotaciones que AspectJ 5, utilizando una biblioteca proporcionada por AspectJ para el análisis y coincidencia de pointcuts. Sin embargo, el tiempo de ejecución de AOP sigue siendo puramente Spring AOP, y no hay dependencia del compilador o tejedor de AspectJ.
+
+#### [Enabling @AspectJ Support](https://docs.spring.io/spring-framework/reference/core/aop/ataspectj/aspectj-support.html)
+
+Para activar el soporte de AspectJ con Java, agregue la anotación `@EnableAspectJAutoProxy`, como muestra el siguiente ejemplo:
+
+```java
+@Configuration
+@EnableAspectJAutoProxy
+    public class AppConfig {
+}
+```
+
+#### [Declaring an Aspect](https://docs.spring.io/spring-framework/reference/core/aop/ataspectj/at-aspectj.html)
+
+TODO
+
+#### [Declaring a Pointcut](https://docs.spring.io/spring-framework/reference/core/aop/ataspectj/pointcuts.html)
+
+TODO
+
+#### [Declaring Advice](https://docs.spring.io/spring-framework/reference/core/aop/ataspectj/advice.html)
+
+TODO
+
+- [Aspect Oriented Programming with Spring - Spring Framework](https://docs.spring.io/spring-framework/reference/core/aop.html)
+
+- [Introduction to Spring AOP - Baeldung](https://www.baeldung.com/spring-aop)
 
 ---
 
