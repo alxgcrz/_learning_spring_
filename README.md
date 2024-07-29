@@ -2143,7 +2143,13 @@ Esta anotación `@Configuration` es una **meta-anotación** o especialización d
 
 La **Programación Orientada a Aspectos (AOP)** es un paradigma de programación que se enfoca en separar las preocupaciones transversales del núcleo de la lógica del negocio.
 
-AOP es muy útil para **modularizar funcionalidades que se repiten** en diferentes partes de una aplicación, como la gestión de transacciones, el registro (logging), la seguridad, y el manejo de excepciones.
+Una preocupación transversal pueden definirse como cualquier funcionalidad que afecta a varios puntos de una aplicación, como los inicios de sesión, la gestión de transacciones, el registro (logging), la seguridad, y el manejo de excepciones.
+
+La AOP es muy útil para **modularizar estas funcionalidades que se repiten** en diferentes partes de la aplicación y desacoplar estas preocupaciones de la lógica de negocio.
+
+- [Aspect Oriented Programming with Spring - Spring Framework](https://docs.spring.io/spring-framework/reference/core/aop.html)
+
+- [Introduction to Spring AOP - Baeldung](https://www.baeldung.com/spring-aop)
 
 ### Conceptos de AOP
 
@@ -2151,9 +2157,11 @@ AOP es muy útil para **modularizar funcionalidades que se repiten** en diferent
 
   Un aspecto es un módulo que encapsula una preocupación transversal. En términos simples, es **una clase que contiene la lógica** para una funcionalidad transversal, como el registro de auditoría o la seguridad.
 
-- **Intercepción (Advice)**
+- **Consejo (Advice)**
 
-  Un advice es **la acción que un aspecto realiza en un punto específico** en el programa. Es el código que se ejecuta cuando se encuentra un punto de unión. Los tipos comunes de advice son:
+  Un _advice_ es **la acción que un aspecto realiza en un punto específico** en el programa. Es el código que se ejecuta cuando se encuentra un punto de unión.
+  
+  Además de describir el trabajo que un aspecto debe llevar a cabo, los _advice_ deben responder a la pregunta de **cúando deben llevar a cabo este trabajo**. Los tipos comunes de _advice_ son:
 
   - **`Before`**: Se ejecuta antes de que el método objetivo sea llamado.
 
@@ -2167,19 +2175,19 @@ AOP es muy útil para **modularizar funcionalidades que se repiten** en diferent
 
 - **Punto de Unión (Join Point)**
 
-  Un punto de unión es un punto en la ejecución del programa, como la invocación de un método o la ejecución de un bloque de código **donde se podría aplicar el aspecto**. En Spring AOP, los puntos de unión son principalmente las invocaciones de métodos.
+  Un punto de unión es **un punto en la ejecución del programa donde se podría aplicar el aspecto**, como la invocación de un método o la ejecución de un bloque de código. En Spring AOP, los puntos de unión son principalmente las invocaciones de métodos.
 
 - **Corte Transversal (Pointcut)**
 
-  Un pointcut es una **expresión** que selecciona uno o más puntos de unión donde un advice debería ejecutarse. Define el **lugar exacto** en el código donde se aplica un aspecto. Por ejemplo, puedes definir un pointcut para todos los métodos en una clase específica o para métodos con un nombre particular.
+  Un pointcut es una **expresión que selecciona uno o más puntos de unión** donde un advice debería ejecutarse. Define el **lugar exacto  donde se aplica un aspecto** en el código. Por ejemplo, se puede definir un pointcut para todos los métodos en una clase específica o para métodos con un nombre particular.
 
 - **Objeto de Intercepción (Proxy)**
 
-  En AOP, un proxy es un objeto creado en tiempo de ejecución que intercepta las llamadas a los métodos de un objeto objetivo para aplicar el advice. Los proxies permiten que los aspectos se apliquen sin modificar el código original del objeto.
+  En AOP, un proxy es **un objeto creado en tiempo de ejecución que intercepta las llamadas** a los métodos de un objeto objetivo para aplicar el advice. Los proxies permiten que los aspectos se apliquen sin modificar el código original del objeto.
 
 - **Objetivo (Target Object)**
 
-  El objeto objetivo es el objeto cuyo método está siendo interceptado. Es el objeto en el que se aplican los aspectos.
+  El _"target object"_ es el objeto cuyo método está siendo interceptado. Es el **objeto en el que se aplican los aspectos**.
 
 ### Implementación de AOP en Spring
 
@@ -2234,19 +2242,375 @@ Para activar el soporte de AspectJ con Java, agregue la anotación `@EnableAspec
 
 #### [Declaring an Aspect](https://docs.spring.io/spring-framework/reference/core/aop/ataspectj/at-aspectj.html)
 
-TODO
+Con el soporte de @AspectJ habilitado, cualquier _bean_ definido en el contexto de aplicación con una clase que sea un aspecto @AspectJ (que tenga la anotación `@Aspect`) es automáticamente detectado por Spring y utilizado para configurar Spring AOP.
+
+```java
+package com.xyz;
+
+import org.aspectj.lang.annotation.Aspect;
+
+@Aspect
+public class NotVeryUsefulAspect {
+  // ...
+}
+```
+
+Los aspectos (clases anotadas con `@Aspect`) pueden tener métodos y campos, al igual que cualquier otra clase.
+
+Las clases de aspecto se pueden registrar como _beans_ normales mediante configuración XML de Spring, a través de métodos `@Bean` en clases `@Configuration`, o hacer que Spring las detecte automáticamente mediante el escaneo del classpath, de la misma manera que cualquier otro _bean_ administrado por Spring.
+
+Sin embargo, hay que tener en cuenta que la anotación `@Aspect` no es suficiente para la detección automática en el classpath. Para ese propósito, se necesita agregar una anotación `@Component` separada o, alternativamente, una anotación de estereotipo personalizada.
+
+```java
+package com.xyz;
+
+import org.aspectj.lang.annotation.Aspect;
+import org.springframework.stereotype.Component;
+
+@Aspect
+@Component
+public class NotVeryUsefulAspect {
+  // ...
+}
+```
 
 #### [Declaring a Pointcut](https://docs.spring.io/spring-framework/reference/core/aop/ataspectj/pointcuts.html)
 
-TODO
+Los _pointcuts_ determinan los puntos de unión de interés y, por lo tanto, nos permiten controlar cuándo se ejecutan los consejos (advice). Spring AOP solo admite puntos de unión de ejecución de métodos para _beans_ de Spring.
+
+Una declaración de pointcut tiene dos partes: una firma que comprende un nombre y cualquier parámetro, y una expresión de pointcut que determina exactamente qué ejecuciones de métodos nos interesan.
+
+En el estilo de anotación @AspectJ de AOP, una firma de _pointcut_ se proporciona mediante una definición de un método (este método debe tener un tipo de retorno `void`), y la expresión de _pointcut_ se indica mediante el uso de la anotación `@Pointcut`:
+
+```java
+@Aspect
+public class MyAspect {
+
+    // Definir el pointcut con una firma de método
+    @Pointcut("execution(* com.example.service.*.*(..))")
+    private void myPointcut() {
+        // Método de marcador, el cuerpo está vacío
+    }
+
+    // Usar el pointcut en un consejo @Before
+    @Before("myPointcut()")
+    public void beforeAdvice() {
+        System.out.println("Advice ejecutado antes del método objetivo");
+    }
+
+    // Otro consejo que usa el mismo pointcut
+    @After("myPointcut()")
+    public void afterAdvice() {
+        System.out.println("Advice ejecutado después del método objetivo");
+    }
+}
+```
+
+Spring AOP soporta los siguientes **designadores de _pointcut_** de AspectJ (PCD) para su uso en expresiones:
+
+- **execution**: Para coincidir con puntos de unión de ejecución de métodos. Este es el principal designador de pointcut a utilizar cuando se trabaja con Spring AOP.
+
+- **within**: Limita la coincidencia a los puntos de unión dentro de ciertos tipos (la ejecución de un método declarado dentro de un tipo que coincide cuando usas Spring AOP).
+
+- **this**: Limita la coincidencia a los puntos de unión (la ejecución de métodos cuando usas Spring AOP) donde la referencia del bean (proxy de Spring AOP) es una instancia del tipo dado.
+
+- **target**: Limita la coincidencia a los puntos de unión (la ejecución de métodos cuando usas Spring AOP) donde el objeto objetivo (objeto de aplicación siendo proxy) es una instancia del tipo dado.
+
+- **args**: Limita la coincidencia a los puntos de unión (la ejecución de métodos cuando usas Spring AOP) donde los argumentos son instancias de los tipos dados.
+
+- **@target**: Limita la coincidencia a los puntos de unión (la ejecución de métodos cuando usas Spring AOP) donde la clase del objeto que ejecuta tiene una anotación del tipo dado.
+
+- **@args**: Limita la coincidencia a los puntos de unión (la ejecución de métodos cuando usas Spring AOP) donde el tipo en tiempo de ejecución de los argumentos reales pasados tiene anotaciones de los tipos dados.
+
+- **@within**: Limita la coincidencia a los puntos de unión dentro de tipos que tienen la anotación dada (la ejecución de métodos declarados en tipos con la anotación dada cuando usas Spring AOP).
+
+- **@annotation**: Limita la coincidencia a los puntos de unión donde el sujeto del punto de unión (el método que se ejecuta en Spring AOP) tiene la anotación dada.
+
+Spring AOP añade un designador de pointcut adicional llamado **bean** y que no forma parte del estándar PCD de AspectJ. Este PCD te permite limitar la coincidencia de puntos de unión a un _bean_ de Spring con un nombre específico o a un conjunto de _beans_ de Spring con nombres específicos (cuando usas comodines). El PCD **bean** tiene la siguiente forma:
+
+```java
+@Aspect
+public class MyAspect {
+
+    // Definir el pointcut usando el designador de bean
+    @Pointcut("bean(myBean)")
+    public void myBeanPointcut() {
+        // Método de marcador, el cuerpo está vacío
+    }
+
+    // Definir el pointcut usando el designador de bean combinado con una expresión normal
+    @Pointcut("bean(myServiceBean) && execution(* com.example.service.MyService.*(..))")
+    public void myCombinedPointcut() {
+        // Método de marcador, el cuerpo está vacío
+    }
+
+    // Definir el pointcut usando el designador de bean con comodines
+    // limita la coincidencia a los beans cuyos nombres terminan en Service.
+    @Pointcut("bean(*Service)")
+    public void serviceBeansPointcut() {
+        // Método de marcador, el cuerpo está vacío
+    }
+
+    @Before("myCombinedPointcut()")
+    public void beforeAdvice() {
+        System.out.println("Advice ejecutado");
+    }
+}
+```
+
+Puedes combinar expresiones de _pointcut_ usando `&&`, `||` y `!`. También puedes referenciar expresiones de _pointcut_ por nombre:
+
+```java
+package com.xyz;
+
+public class Pointcuts {
+
+  @Pointcut("execution(public * *(..))")
+  public void publicMethod() {}
+
+  @Pointcut("within(com.xyz.trading..*)")
+  public void inTrading() {}
+
+  @Pointcut("publicMethod() && inTrading()")
+  public void tradingOperation() {}
+
+}
+```
+
+Al trabajar con aplicaciones empresariales, los desarrolladores a menudo necesitan referirse a módulos de la aplicación y a conjuntos particulares de operaciones desde varios aspectos. La recomendación es definir una clase dedicada que capture **expresiones de _pointcut_ con nombre** comúnmente para este propósito. Tal clase puede parecerse al siguiente ejemplo de `CommonPointcuts`:
+
+```java
+package com.xyz;
+
+import org.aspectj.lang.annotation.Pointcut;
+
+public class CommonPointcuts {
+
+  /**
+   * A join point is in the web layer if the method is defined
+   * in a type in the com.xyz.web package or any sub-package
+   * under that.
+   */
+  @Pointcut("within(com.xyz.web..*)")
+  public void inWebLayer() {}
+
+  /**
+   * A join point is in the service layer if the method is defined
+   * in a type in the com.xyz.service package or any sub-package
+   * under that.
+   */
+  @Pointcut("within(com.xyz.service..*)")
+  public void inServiceLayer() {}
+
+  /**
+   * A join point is in the data access layer if the method is defined
+   * in a type in the com.xyz.dao package or any sub-package
+   * under that.
+   */
+  @Pointcut("within(com.xyz.dao..*)")
+  public void inDataAccessLayer() {}
+
+  /**
+   * A business service is the execution of any method defined on a service
+   * interface. This definition assumes that interfaces are placed in the
+   * "service" package, and that implementation types are in sub-packages.
+   *
+   * If you group service interfaces by functional area (for example,
+   * in packages com.xyz.abc.service and com.xyz.def.service) then
+   * the pointcut expression "execution(* com.xyz..service.*.*(..))"
+   * could be used instead.
+   *
+   * Alternatively, you can write the expression using the 'bean'
+   * PCD, like so "bean(*Service)". (This assumes that you have
+   * named your Spring service beans in a consistent fashion.)
+   */
+  @Pointcut("execution(* com.xyz..service.*.*(..))")
+  public void businessService() {}
+
+  /**
+   * A data access operation is the execution of any method defined on a
+   * DAO interface. This definition assumes that interfaces are placed in the
+   * "dao" package, and that implementation types are in sub-packages.
+   */
+  @Pointcut("execution(* com.xyz.dao.*.*(..))")
+  public void dataAccessOperation() {}
+
+}
+```
+
+- [The AspectJ Programming Guide - Eclipse](https://eclipse.dev/aspectj/doc/released/progguide/index.html)
+
+- [The AspectJ 5 Development Kit Developer's Notebook - Eclipse](https://eclipse.dev/aspectj/doc/released/adk15notebook/index.html)
 
 #### [Declaring Advice](https://docs.spring.io/spring-framework/reference/core/aop/ataspectj/advice.html)
 
-TODO
+El _advice_ está asociado con una expresión de _pointcut_ y se ejecuta antes, después o alrededor de las ejecuciones de métodos que coinciden con el _pointcut_.
 
-- [Aspect Oriented Programming with Spring - Spring Framework](https://docs.spring.io/spring-framework/reference/core/aop.html)
+La expresión puede ser una expresión de _pointcut_ en línea o una referencia a un _pointcut_ con nombre.
 
-- [Introduction to Spring AOP - Baeldung](https://www.baeldung.com/spring-aop)
+##### Before Advice
+
+Puedes declarar un _advice_ que se ejecute antes en un aspecto utilizando la anotación `@Before`.
+
+```java
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
+
+@Aspect
+public class BeforeExample {
+
+  // Expresión de pointcut en línea 
+  @Before("execution(* com.xyz.dao.*.*(..))")
+  public void doAccessCheck() {
+    // ...
+  }
+
+  // Pointcut con nombre
+  @Before("com.xyz.CommonPointcuts.dataAccessOperation()")
+  public void doAccessCheck() {
+    // ...
+  }
+
+}
+```
+
+Este _advice_ no tiene parámetros específicos, pero puede recibir un parámetro [`JointPoint`](https://eclipse.dev/aspectj/doc/released/runtime-api/org/aspectj/lang/JoinPoint.html)
+
+```java
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
+import org.aspectj.lang.annotation.Pointcut;
+
+@Aspect
+public class MyAspect {
+
+    @Pointcut("execution(* com.example.service.*.*(..))")
+    public void serviceMethods() {
+        // Método de marcador, el cuerpo está vacío
+    }
+
+    @Before("serviceMethods()")
+    public void beforeAdvice(JoinPoint joinPoint) {
+        System.out.println("Antes de la ejecución del método: " + joinPoint.getSignature());
+    }
+}
+```
+
+La interfaz `JoinPoint` en Spring AOP proporciona una serie de métodos útiles que permiten acceder a información detallada sobre el método que está siendo interceptado.
+
+- **`getArgs()`**: accede a los argumentos del método interceptado.
+
+- **`getThis()`**: obtiene el objeto proxy de Spring AOP.
+
+- **`getTarget()`**: obtiene el objeto objetivo que está siendo llamado.
+
+- **`getSignature()`**: proporciona una descripción del método siendo aconsejado
+
+- **`toString()`**: imprime una descripción legible del join point`
+
+##### After Returning Advice
+
+El _advice_ se ejecuta cuando la ejecución del método coincidente finaliza con normalidad. Se puede declarar utilizando la anotación `@AfterReturning`.
+
+```java
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.AfterReturning;
+
+@Aspect
+public class AfterReturningExample {
+
+  @AfterReturning("execution(* com.xyz.dao.*.*(..))")
+  public void doAccessCheck() {
+    // ...
+  }
+
+}
+```
+
+A veces, se necesita acceso en el cuerpo del _advice_ al valor real que se ha devuelto. Se puede usar la forma de `@AfterReturning` que vincula el valor de retorno para obtener ese acceso con el parámetro `returning`, como muestra el siguiente ejemplo:
+
+```java
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.AfterReturning;
+
+@Aspect
+public class AfterReturningExample {
+
+  @AfterReturning(
+  pointcut="execution(* com.xyz.dao.*.*(..))",
+    returning="retVal")
+  public void doAccessCheck(Object retVal) {
+    // ...
+  }
+
+}
+```
+
+##### After Throwing Advice
+
+El _advice_ se ejecuta cuando la ejecución del método coincidente finaliza lanzando una excepción. Se puede declarar utilizando la anotación `@AfterThrowing`, como muestra el siguiente ejemplo:
+
+```java
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.AfterThrowing;
+
+@Aspect
+public class AfterThrowingExample {
+
+  @AfterThrowing("execution(* com.xyz.dao.*.*(..))")
+  public void doRecoveryActions() {
+    // ...
+  }
+
+}
+```
+
+##### After (Finally) Advice
+
+El _advice_ se ejecuta cuando una ejecución de método coincidente termina, ya sea que haya terminado normalmente o haya lanzado una excepción. Se declara utilizando la anotación `@After`. Se usa para realizar tareas de limpieza o liberación de recursos que deben ejecutarse sin importar si el método termina correctamente o con error.
+
+```java
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.After;
+
+@Aspect
+public class AfterFinallyExample {
+
+  @After("execution(* com.xyz.dao.*.*(..))")
+  public void doReleaseLock() {
+    // ...
+  }
+}
+
+```
+
+##### Around Advice
+
+Este _advice_ se ejecuta "alrededor" de la ejecución de un método coincidente. Tiene la oportunidad de realizar trabajo tanto antes como después de que el método se ejecute y puede determinar cuándo, cómo, e incluso si el método debe ejecutarse en absoluto.
+
+Siempre se deb utilizarla forma de _advice_ menos más específica y menos invasiva que satisfaga los requisitos. Por ejemplo, no uses _"around advice"_ si _"before advice"_ es suficiente.
+
+```java
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.ProceedingJoinPoint;
+
+@Aspect
+public class AroundExample {
+
+  @Around("execution(* com.xyz..service.*.*(..))")
+  public Object doBasicProfiling(ProceedingJoinPoint pjp) throws Throwable {
+    // start stopwatch
+    Object retVal = pjp.proceed();
+    // stop stopwatch
+    return retVal;
+  }
+
+}
+```
+
+En Spring AOP, el _around advice_ requiere que se declare un primer parámetro de tipo [`ProceedingJoinPoint`](https://eclipse.dev/aspectj/doc/released/runtime-api/org/aspectj/lang/ProceedingJoinPoint.html), que es una subclase de `JoinPoint`.
 
 ---
 
