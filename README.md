@@ -20,7 +20,7 @@ Con Spring Boot, el proceso de desarrollo se simplifica mediante la inclusión d
 
 En resumen, Spring Boot es una extensión de Spring Framework diseñada para hacer que el desarrollo de aplicaciones Java sea más rápido, sencillo y eficiente al proporcionar configuraciones por defecto y convenciones inteligentes sin sacrificar la flexibilidad y la potencia que ofrece Spring Framework.
 
-:warning: **Introducción generada por ChatGPT**
+:warning: **Sección introductoria generada por ChatGPT**
 
 ## [Spring Core Annotations](https://www.baeldung.com/spring-core-annotations)
 
@@ -83,7 +83,7 @@ public class MyService {
 }
 ```
 
-`@Autowired` tiene un argumento booleano llamado `required` con un valor predeterminado de `true`. Este argumento ajusta el comportamiento de Spring cuando no encuentra un _bean_ adecuado para conectar. Cuando es verdadero, se lanzará una excepción si no encuentra el _bean_; de lo contrario, no se conecta nada. Sin embargo, se recomienda dejar el valor a `true`(predeterminado) para evitar excepciones de puntero nulo al no estar inicializado el _bean_ y ser utilizado en el código.
+`@Autowired` tiene un argumento booleano llamado `required` con un valor predeterminado de `true`. Este argumento ajusta el comportamiento de Spring cuando no encuentra un _bean_ adecuado para conectar. Cuando es verdadero, se lanzará una excepción si no encuentra el _bean_; de lo contrario, no se conecta nada. Sin embargo, se recomienda dejar el valor a `true` (predeterminado) para evitar excepciones de _'null pointer'_ al no estar inicializado el _bean_ y ser utilizado en el código.
 
 ```java
 @Autowired(required=false)
@@ -92,7 +92,7 @@ public MyService(Dependency2 dependency2) {
 }
 ```
 
-Puede utilizarse `@Inject` en lugar de `@Autowired` en Spring Framework. `@Inject` (y `@Named`) es parte de la especificación estándar [JSR-330](https://docs.spring.io/spring-framework/reference/core/beans/standard-annotations.html) de Jakarta EE/CDI, mientras que `@Autowired` es específico de Spring y ofrece funcionalidades adicionales. Para poder utilizar esta anotación, hay que añadir la dependencia al `pom.xml` o al `build.gradle`:
+Puede utilizarse `@Inject` en lugar de `@Autowired` en Spring Framework. `@Inject` (y `@Named`) es parte de la especificación estándar [JSR-330](https://docs.spring.io/spring-framework/reference/core/beans/standard-annotations.html) de Jakarta EE/CDI, mientras que `@Autowired` es específico de Spring y ofrece funcionalidades adicionales. Para poder utilizar esta anotación, hay que añadir la dependencia **_Jakarta Dependency Injection_** al fichero `pom.xml` o al fichero `build.gradle`:
 
 ```xml
 <dependency>
@@ -102,7 +102,15 @@ Puede utilizarse `@Inject` en lugar de `@Autowired` en Spring Framework. `@Injec
 </dependency>
 ```
 
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/beans/factory/annotation/Autowired.html)
+La anotación `@Autowired` por sí sola no es suficiente para que Spring gestione la inyección de dependencias. Es crucial que Spring esté configurado para encontrar y manejar los _beans_ en el contexto de la aplicación.
+
+Los _beans_ son aquellas clases anotadas con [`@Component`](#component), [`@Service`](#service), [`@Repository`](#repository) o [`@Controller `](#controller).
+
+Si Spring está configurado mediante clases Java, se utiliza la anotación [`@ComponentScan`](#componentscan) para indicar a Spring dónde buscar los beans. En una aplicación Spring Boot, la anotación [`@SpringBootApplication`](#springbootapplication) ya incluye `@ComponentScan` por defecto, escaneando el paquete donde se encuentra la clase de arranque y sus subpaquetes.
+
+Una vez que los _beans_ están registrados en el contexto de la aplicación, ya se puede utilizar `@Autowired` para inyectar estos _beans_ en otras partes de la aplicación. La inyección se realiza en el momento en que Spring crea e inicializa los objetos de la clase que necesita las dependencias.
+
+- [Javadoc - @Autowired](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/beans/factory/annotation/Autowired.html)
 
 - [Guide to Spring @Autowired - Baeldung](https://www.baeldung.com/spring-autowire)
 
@@ -114,7 +122,7 @@ Puede utilizarse `@Inject` en lugar de `@Autowired` en Spring Framework. `@Injec
 
 #### @Bean
 
-La anotación `@Bean` marca un _'factory method'_ que crea una instancia de un _bean_ de Spring y que se registrará en el contexto de aplicación de Spring:
+La anotación `@Bean` se usa en métodos dentro de una clase anotada con [`@Configuration`](#configuration) para registrar y configurar _beans_ en el contexto de la aplicación. **Spring llamará a estos métodos** cuando se requiera de una instancia del tipo de retorno del método:
 
 ```java
 @Configuration
@@ -126,11 +134,9 @@ public class AppConfiguration {
 }
 ```
 
-**Spring llama a estos métodos** cuando se requiere una instancia del tipo de retorno.
+Esta anotación se utiliza básicamente cuando se definen _beans_ que no pueden ser anotados directamente, como por ejemplo, cuando se trabaja con **clases de librerías de terceros**.
 
-El bean resultante por defecto tiene el mismo nombre que el _'factory method'_. Si se requiere que tenga un nombre diferente, se puede proporcionar un nombre explícito como argumento `name` de la anotación o mediante un alias. Además, se pueden indicar varios nombres que pueden ser utilizados de forma indistinta:
-
-hacer con el nombre o los argumentos de valor de esta anotación (el valor del argumento es un alias para el nombre del argumento):
+El _bean_ resultante por defecto tiene el mismo nombre que el _'factory method'_. Si se requiere que tenga un nombre diferente, se puede proporcionar un nombre explícito como argumento `name` de la anotación o mediante un alias. Además, se pueden indicar varios nombres que pueden ser utilizados de forma indistinta:
 
 ```java
 @Configuration
@@ -152,9 +158,9 @@ public class AppConfiguration {
 }
 ```
 
-Hay que tener en cuenta que **todos los métodos anotados con `@Bean` deben estar en clases `@Configuration`**.
+> **Todos los métodos anotados con `@Bean` deben estar en clases `@Configuration`**.
 
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Bean.html)
+- [Javadoc - @Bean](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Bean.html)
 
 - [Bean Overview - Spring Framework](https://docs.spring.io/spring-framework/reference/core/beans/definition.html)
 
@@ -164,15 +170,17 @@ Hay que tener en cuenta que **todos los métodos anotados con `@Bean` deben esta
 
 #### @Qualifier
 
-Se usa la anotación `@Qualifier` junto con `@Autowired` para proporcionar la **identificación del _bean_** o el **nombre del _bean_** que se debe usar, sobretodo en situaciones ambiguas.
+Se usa la anotación `@Qualifier` junto con `@Autowired` para proporcionar la **identificación** o el **nombre** del _bean_ que Spring debe usar en situaciones ambiguas.
 
 ```java
+@Component
 class Bike implements Vehicle {}
 
+@Component
 class Car implements Vehicle {}
 ```
 
-En caso de ambigüedad, se utiliza `@Qualifier` para indicar a Spring **el _bean_ a inyectar**:
+En caso de ambigüedad, Spring lanzará la excepción **_NoUniqueBeanDefinitionException_**. En el ejemplo anterior, Spring no sabrá que _bean_ debe inyectar. En estos casos, se utiliza la anotación `@Qualifier` para indicar a Spring **el _bean_ a inyectar**:
 
 ```java
 // Using constructor injection
@@ -199,7 +207,9 @@ void setVehicle(Vehicle vehicle) {
 Vehicle vehicle;
 ```
 
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/beans/factory/annotation/Qualifier.html)
+Otra forma de gestionar las ambigüedades es utilizando la anotación [`@Primary`](#primary).
+
+- [Javadoc - @Qualifier](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/beans/factory/annotation/Qualifier.html)
 
 - [Fine-tuning Annotation-based Autowiring with Qualifiers - Spring Framework](https://docs.spring.io/spring-framework/reference/core/beans/annotation-config/autowired-qualifiers.html#page-title)
 
@@ -214,9 +224,9 @@ Engine(@Value("8") int cylinderCount) {
 }
 ```
 
-Por supuesto, inyectar valores estáticos no es útil.
+Por supuesto, inyectar valores estáticos como en el ejemplo no tiene demasiada utilidad.
 
-Podemos usar **cadenas _'placeholder'_** en `@Value` para conectar valores definidos en fuentes externas, por ejemplo, en archivos _'.properties'_ o _'.yaml'_.
+Podemos usar **cadenas _'placeholder'_** en `@Value` para conectar valores definidos en fuentes externas, por ejemplo, en archivos _".properties"_ o _".yaml"_.
 
 Por ejemplo, un valor en un fichero externo _"application.properties"_ podría ser:
 
@@ -224,7 +234,7 @@ Por ejemplo, un valor en un fichero externo _"application.properties"_ podría s
 catalog.name=MovieCatalog
 ```
 
-Podemos inyectar este valor de esta forma.:
+Podemos inyectar este valor de la siguiente forma:
 
 ```java
 @Component
@@ -238,7 +248,7 @@ public class MovieRecommender {
 }
 ```
 
-Y con la siguiente configuración:
+Hay que tener en cuenta que además, se necesitaría la siguiente configuración:
 
 ```java
 @Configuration
@@ -246,7 +256,7 @@ Y con la siguiente configuración:
 public class AppConfig { }
 ```
 
-Si la propiedad no está definida, se podría proporcionar un valor por defecto:
+Si la propiedad no está definida, se puede proporcionar un **valor por defecto**:
 
 ```java
 @Component
@@ -292,7 +302,7 @@ Cuando `@Value("#{expression}")` contiene una expresión SpEL, el valor se calcu
 "#{otherBean?.property}" // Antes de acceder a property se valida que otherBean != null
 ```
 
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/beans/factory/annotation/Value.html)
+- [Javadoc - @Value](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/beans/factory/annotation/Value.html)
 
 - [A Quick Guide to Spring @Value - Baeldung](https://www.baeldung.com/spring-value-annotation)
 
@@ -302,18 +312,18 @@ Cuando `@Value("#{expression}")` contiene una expresión SpEL, el valor se calcu
 
 #### @DependsOn
 
-La anotación `@DependsOn` se puede utilizar para hacer que Spring **inicialice otros beans antes del anotado**. Normalmente, este comportamiento es automático y se basa en las dependencias explícitas entre beans. Spring, de forma predeterminada, gestiona el ciclo de vida de los beans y organiza su orden de inicialización.
+La anotación `@DependsOn` se puede utilizar para hacer que Spring **inicialice otros _beans_ antes del _bean_ anotado**. Normalmente, este comportamiento es automático y se basa en las dependencias explícitas entre _beans_. Spring, de forma predeterminada, gestiona el ciclo de vida de los _beans_ y organiza su orden de inicialización.
 
-Solo necesitamos esta anotación cuando **las dependencias están implícitas**, por ejemplo, carga del controlador JDBC o inicialización de variables estáticas.
+Solo necesitamos esta anotación cuando **las dependencias están implícitas**, como por ejemplo, la carga de un controlador JDBC o la inicialización de variables estáticas.
 
-Podemos usar `@DependsOn` en la clase dependiente especificando los nombres de los beans de dependencia. El argumento de valor de la anotación necesita una matriz que contenga los nombres de los beans de dependencia:
+Podemos usar `@DependsOn` en la clase dependiente especificando los nombres de los _beans_ de dependencia. El argumento de valor de la anotación necesita una matriz que contenga los nombres de los _beans_ de dependencia:
 
 ```java
 @DependsOn("engine")
 class Car implements Vehicle {}
 ```
 
-Alternativamente, si se define un bean con la anotación `@Bean`, el _'factory method'_ debería anotarse con `@DependsOn`:
+Alternativamente, si se define un bean con la anotación [`@Bean`](#bean), el _'factory method'_ debería anotarse con `@DependsOn`:
 
 ```java
 @Bean
@@ -323,17 +333,19 @@ Engine engine() {
 }
 ```
 
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/DependsOn.html)
+- [Javadoc - @DependsOn](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/DependsOn.html)
 
 #### @Lazy
 
-La anotación `@Lazy` se utiliza cuando queremos inicializar un bean de forma diferida. De forma predeterminada, Spring crea todos los beans _singleton_ al inicio/arranque del contexto de la aplicación.
+La anotación `@Lazy` se utiliza a nivel de **clase** o **método** cuando queremos inicializar un _bean_ de forma diferida o perezosa.
 
-Sin embargo, hay casos en los que necesitamos crear un bean cuando se solicita, no al iniciar la aplicación.
+De forma predeterminada, Spring crea todos los _beans_ con el alcance _"singleton"_ por defecto al inicio del contexto de la aplicación de manera ansiosa o _'eager'_.
+
+Sin embargo, hay casos en los que necesitamos crear un _bean_ cuando se solicita, no al iniciar la aplicación. En estos casos se utilizará la anotación `@Lazy`.
 
 Esta anotación tiene un argumento con el valor predeterminado de 'true'. Es útil para anular el comportamiento predeterminado.
 
-Por ejemplo, marcar beans para que se carguen inmediatamente cuando la configuración global es diferida, o configurar métodos específicos de `@Bean` para carga inmediata en una clase `@Configuration` marcada con `@Lazy`:
+Por ejemplo, marcar _beans_ para que se carguen inmediatamente cuando la configuración global es diferida, o configurar métodos específicos de `@Bean` para carga inmediata en una clase `@Configuration` marcada con `@Lazy`:
 
 ```java
 @Configuration
@@ -348,7 +360,7 @@ class VehicleFactoryConfig {
 }
 ```
 
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Lazy.html)
+- [Javadoc - @Lazy](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Lazy.html)
 
 - [A Quick Guide to the Spring @Lazy Annotation](https://www.baeldung.com/spring-lazy-annotation)
 
@@ -356,7 +368,40 @@ class VehicleFactoryConfig {
 
 Un método anotado con `@Lookup` le indica a Spring que devuelva una instancia del tipo de retorno del método cuando lo invoquemos.
 
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/beans/factory/annotation/Lookup.html)
+La anotación `@Lookup` en Spring permite la **obtención dinámica de _beans_** desde el contenedor de Spring. Se utiliza para resolver y obtener instancias de _beans_ de manera perezosa, especialmente útil en combinación con _beans 'prototype'_ o cuando se requiere obtener una nueva instancia de un bean en cada solicitud. Spring reemplaza el método anotado con `@Lookup` para devolver una nueva instancia del bean solicitado cada vez que el método es invocado.
+
+Esta anotación es útil en casos donde la inyección directa no es posible o no es adecuada, como por ejemplo cuando se inyecta un _bean 'prototype'_ en un _bean 'singleton'_.
+
+La explicación es que cuando se inyecta un _bean 'singleton'_, Spring crea una sola instancia de ese _bean_ y la reutiliza en toda la aplicación. Si se intenta inyectar un _bean 'prototype'_ en un _bean 'singleton'_ mediante inyección directa, Spring solo inyectará una instancia única del _bean 'prototype'_, es decir, la misma instancia será utilizada en cada solicitud, lo cual no es el comportamiento deseado.
+
+La anotación `@Lookup` permitirá obtener una nueva instancia del _bean 'prototype'_ en cada invocación del método anotado.
+
+```java
+// bean 'singleton'
+@Component
+public class MiBeanSingleton {
+
+    @Lookup
+    public MiBeanPrototype obtenerBeanPrototype() {
+        // Spring reemplaza esta implementación para devolver una nueva instancia de 'MiBeanPrototype'
+        return null;
+    }
+
+    public void usarBeanPrototype() {
+        MiBeanPrototype beanPrototype = obtenerBeanPrototype();
+        // Trabajar con la nueva instancia del bean prototype
+    }
+}
+
+// bean 'prototype'
+@Component
+@Scope("prototype")
+public class MiBeanPrototype {
+    // Bean creado con alcance prototype
+}
+```
+
+- [Javadoc - @Lookup](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/beans/factory/annotation/Lookup.html)
 
 - [@Lookup Annotation in Spring](https://www.baeldung.com/spring-lookup)
 
@@ -364,9 +409,9 @@ Un método anotado con `@Lookup` le indica a Spring que devuelva una instancia d
 
 A veces se necesita definir **múltiples _beans_ del mismo tipo**. En estos casos, la inyección no tendrá éxito porque Spring no sabe qué _bean_ necesitamos.
 
-Una opción para manejar este escenario es marcar todos los puntos de conexión con `@Qualifier` y especificar el nombre del _bean_ requerido.
+Una opción para manejar este escenario es marcar todos los puntos de conexión con [`@Qualifier`](#qualifier) y especificar el nombre del _bean_ requerido.
 
-Sin embargo, la mayoría de las veces se necesita un _bean_ específico y rara vez los otros. SE puede emplear `@Primary` para simplificar este caso: si se marca el _bean_ usado más frecuentemente con `@Primary`, será elegido en los puntos de inyección no calificados:
+Sin embargo, la mayoría de las veces se necesita un _bean_ específico y rara vez los otros. Se puede emplear `@Primary` para simplificar este caso: si se marca el _bean_ usado más **frecuentemente** con `@Primary`, será elegido en los puntos de inyección no calificados:
 
 ```java
 @Component
@@ -392,13 +437,13 @@ class Biker {
 
 En el ejemplo anterior, _'Car'_ es el vehículo principal. Por lo tanto, en la clase _'Driver'_, Spring inyecta un _bean_ de tipo _'Car'_. Por supuesto, en el _bean_ _'Biker'_, el valor del campo '_vehicle'_ será un objeto de tipo _'Bike'_ porque está calificado.
 
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Primary.html)
+- [Javadoc - @Primary](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Primary.html)
 
 - [Fine-tuning Annotation-based Autowiring with Qualifiers - Spring Framework](https://docs.spring.io/spring-framework/reference/core/beans/annotation-config/autowired-qualifiers.html#page-title)
 
 #### @Scope
 
-Usamos `@Scope` para definir el ámbito de una clase `@Component` o una definición de `@Bean`. Los ámbitos pueden ser:
+Usamos `@Scope` para definir el **ámbito o alcance** de una clase `@Component` o una definición de `@Bean`. Los ámbitos pueden ser:
 
 - **_singleton_** - [ConfigurableBeanFactory.SCOPE_SINGLETON](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/beans/factory/config/ConfigurableBeanFactory.html#SCOPE_SINGLETON)
 
@@ -420,9 +465,11 @@ Usamos `@Scope` para definir el ámbito de una clase `@Component` o una definici
 class Engine {}
 ```
 
-**El ámbito por defecto es 'singleton'**. Esto significa que Spring crea una única instancia del bean en el contexto de la aplicación y la reutiliza en toda la aplicación. Por tanto, independientemente de cúantas veces se inyecte un _bean_, Spring inyecta la misma instancia.
+> El ámbito o alcance por **defecto** es **_'singleton'_**.
 
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Scope.html)
+El ámbito **_'singleton'_** significa que Spring crea **una única instancia** del _bean_ en el contexto de la aplicación y la reutiliza en toda la aplicación. Por tanto, independientemente de cuántas veces se inyecte un _bean_, Spring inyectará la misma instancia.
+
+- [Javadoc - @Scope](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Scope.html)
 
 - [Bean Scopes - Spring Framework](https://docs.spring.io/spring-framework/reference/core/beans/factory-scopes.html)
 
