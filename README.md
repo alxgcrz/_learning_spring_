@@ -104,7 +104,7 @@ Puede utilizarse `@Inject` en lugar de `@Autowired` en Spring Framework. `@Injec
 
 La anotación `@Autowired` por sí sola no es suficiente para que Spring gestione la inyección de dependencias. Es crucial que Spring esté configurado para encontrar y manejar los _beans_ en el contexto de la aplicación.
 
-Los _beans_ son aquellas clases anotadas con [`@Component`](#component), [`@Service`](#service), [`@Repository`](#repository) o [`@Controller `](#controller).
+Los _beans_ son aquellas clases anotadas con [`@Component`](#component), [`@Service`](#service), [`@Repository`](#repository) o [`@Controller`](#controller).
 
 Si Spring está configurado mediante clases Java, se utiliza la anotación [`@ComponentScan`](#componentscan) para indicar a Spring dónde buscar los beans. En una aplicación Spring Boot, la anotación [`@SpringBootApplication`](#springbootapplication) ya incluye `@ComponentScan` por defecto, escaneando el paquete donde se encuentra la clase de arranque y sus subpaquetes.
 
@@ -270,6 +270,12 @@ public class MovieRecommender {
 }
 ```
 
+- [Javadoc - @Value](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/beans/factory/annotation/Value.html)
+
+- [A Quick Guide to Spring @Value - Baeldung](https://www.baeldung.com/spring-value-annotation)
+
+- [Using @Value - Spring Framework](https://docs.spring.io/spring-framework/reference/core/beans/annotation-config/value-annotations.html)
+
 ##### Lenguaje de Expresiones SpEl
 
 Cuando `@Value("#{expression}")` contiene una expresión SpEL, el valor se calculará dinámicamente en tiempo de ejecución.
@@ -302,19 +308,15 @@ Cuando `@Value("#{expression}")` contiene una expresión SpEL, el valor se calcu
 "#{otherBean?.property}" // Antes de acceder a property se valida que otherBean != null
 ```
 
-- [Javadoc - @Value](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/beans/factory/annotation/Value.html)
-
-- [A Quick Guide to Spring @Value - Baeldung](https://www.baeldung.com/spring-value-annotation)
-
-- [Using @Value - Spring Framework](https://docs.spring.io/spring-framework/reference/core/beans/annotation-config/value-annotations.html)
-
 - [Spring Expression Language (SpEL) - Spring Framework](https://docs.spring.io/spring-framework/reference/core/expressions.html)
 
 #### @DependsOn
 
-La anotación `@DependsOn` se puede utilizar para hacer que Spring **inicialice otros _beans_ antes del _bean_ anotado**. Normalmente, este comportamiento es automático y se basa en las dependencias explícitas entre _beans_. Spring, de forma predeterminada, gestiona el ciclo de vida de los _beans_ y organiza su orden de inicialización.
+La anotación `@DependsOn` se puede utilizar para hacer que Spring **inicialice otros _beans_ antes del _bean_ anotado**. Normalmente, este comportamiento de inicialización y carga es automático y se basa en las dependencias explícitas entre _beans_. Spring, de forma predeterminada, gestiona el ciclo de vida de los _beans_ y organiza su orden de inicialización según las necesidades.
 
 Solo necesitamos esta anotación cuando **las dependencias están implícitas**, como por ejemplo, la carga de un controlador JDBC o la inicialización de variables estáticas.
+
+Las **dependencias implícitas** son aquellas que no están declaradas directamente entre beans (por ejemplo, usando `@Autowired`) pero que son necesarias para el correcto funcionamiento de la aplicación.
 
 Podemos usar `@DependsOn` en la clase dependiente especificando los nombres de los _beans_ de dependencia. El argumento de valor de la anotación necesita una matriz que contenga los nombres de los _beans_ de dependencia:
 
@@ -477,7 +479,7 @@ El ámbito **_'singleton'_** significa que Spring crea **una única instancia** 
 
 #### @Profile
 
-Si queremos que Spring use una clase `@Component` o un método `@Bean` solo cuando un perfil específico esté activo, podemos marcarlo con `@Profile`. Podemos configurar el nombre del perfil con el argumento de la anotación:
+La anotación `@Profile` es útil para cargar beans solo en entornos específicos (_'dev'_, _'test'_, _'prod'_) o bajo condiciones especiales. Podemos configurar el nombre del perfil como argumento de la anotación:
 
 ```java
 @Component
@@ -485,7 +487,9 @@ Si queremos que Spring use una clase `@Component` o un método `@Bean` solo cuan
 class Bike implements Vehicle {}
 ```
 
-Si se utiliza a nivel de clase en una clase de configuración por ejemplo, todos los _beans_ se cargarán con ese perfil. Sin embargo, puede combinarse la anotación a nivel de clase y a nivel de método en la misma clase:
+Se puede aplicar a clases o métodos para controlar la configuración en función de los perfiles activos. Si se utiliza a nivel de clase en una clase de configuración por ejemplo, se cargarán todos los _beans_ del perfil activo. Cuando un perfil no está activo, los _beans_ anotados con `@Profile` correspondiente no se crean, lo que evita la carga innecesaria de componentes en entornos donde no son necesarios.
+
+Además, esta anotación puede combinarse a nivel de clase y a nivel de método en una misma clase:
 
 ```java
 @Configuration
@@ -507,7 +511,18 @@ public class MixedConfig {
 }
 ```
 
-Para activar un perfil, se puede hacer de varias maneras. La más común sería usando las propiedades de configuración `spring.profiles.active` y/o `spring.profiles.default` en _"application.properties"_ o _"application.yml"_. Se pueden definir varios perfiles separándolos con comas:
+Por último, se pueden combinar perfiles mediante operadores lógicos como `AND`, `OR` y `NOT`:
+
+```java
+// Indica que el bean se carga cuando dev está activo y prod no lo está.
+@Configuration
+@Profile({"dev", "!prod"})
+public class MixedConfig {
+    // ...   
+}
+```
+
+Para activar un perfil, se puede hacer de varias maneras. La más común sería usando las propiedades de configuración `spring.profiles.active` y/o `spring.profiles.default` en el fichero _"application.properties"_ o _"application.yml"_. Otras formas sería con parámetros de línea de comandos, o mediante variables de entorno. Se pueden definir varios perfiles separándolos con comas:
 
 ```txt
 // Determina los perfiles activos
@@ -517,9 +532,9 @@ spring.profiles.active=dev,feature-x
 spring.profiles.default=prod
 ```
 
-Si no se establece ninguna de las dos propiedades, no habrá perfiles activos y **Spring sólo crea los beans que no tengan perfil**.
+Si no se establece ninguna de las dos propiedades anteriores, no habrá perfiles activos y **Spring sólo creará los _beans_ que no tengan perfil**.
 
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Profile.html)
+- [Javadoc - @Profile](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Profile.html)
 
 - [Spring Profiles - Baeldung](https://www.baeldung.com/spring-profiles)
 
@@ -531,7 +546,7 @@ Si no se establece ninguna de las dos propiedades, no habrá perfiles activos y 
 
 Spring dispone de la anotación `@ActiveProfiles`, que es una anotación compatible con JUnit 5, para declarar los perfiles activos a usar cuando se carga un contexto de aplicación en las clases de prueba.
 
-Entonces, si anotamos una clase de prueba con la anotación `@ActiveProfiles` y establecemos el atributo `value` a `test`, todas las pruebas en la clase usarán el perfil `test`:
+Por lo tanto, si anotamos una clase de prueba con la anotación `@ActiveProfiles` y establecemos el atributo `value` a `test`, todas las pruebas en la clase usarán el perfil `test`:
 
 ```java
 @SpringBootTest(classes = ActiveProfileApplication.class)
@@ -548,7 +563,11 @@ public class TestActiveProfileUnitTest {
 }
 ```
 
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/test/context/ActiveProfiles.html)
+La anotación `@ActiveProfiles` permite definir perfiles activos específicos para pruebas. Se puede usar con un solo perfil o múltiples perfiles si se necesita combinar configuraciones, por ejemplo: `@ActiveProfiles({"test", "dev"})`.
+
+Si se activan múltiples perfiles, el orden en que se especifiquen puede ser relevante en situaciones donde las propiedades se superpongan.
+
+- [Javadoc - @ActiveProfiles](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/test/context/ActiveProfiles.html)
 
 - [@ActiveProfiles - Spring Framework](https://docs.spring.io/spring-framework/reference/testing/annotations/integration-spring/annotation-activeprofiles.html#page-title)
 
@@ -556,9 +575,9 @@ public class TestActiveProfileUnitTest {
 
 #### @Import
 
-La anotación `@Import` en Spring se utiliza para importar configuraciones adicionales a una configuración principal de la aplicación.
+La anotación `@Import` en Spring se utiliza para importar configuraciones adicionales a la configuración principal de la aplicación.
 
-Si tenemos una clase anotada con `@Configuration` que define beans y configuraciones específicas para la aplicación, se puede usar `@Import` para incluir esta configuración en otra clase `@Configuration` principal:
+Es decir, si tenemos una clase anotada con `@Configuration` que define _beans_ y/o configuraciones específicas para la aplicación, se puede usar `@Import` para incluir esta configuración en otra clase anotada con `@Configuration` y que corresponde con la configuración principal:
 
 ```java
 @Configuration
@@ -568,7 +587,7 @@ public class MainConfig {
 }
 ```
 
-Otro uso de esta antoación es que podemos utilizar **clases específicas anotadas con `@Configuration` sin escaneo de componentes** con esta anotación. Podemos proporcionar esas clases con el argumento de la anotación. Esto es útil cuando se quiere tener control explícito sobre qué configuraciones y beans están disponibles en la aplicación:
+Además, `@Import` permite utilizar **clases específicas anotadas con `@Configuration` sin escaneo de componentes**, lo cual es útil para tener control explícito sobre qué configuraciones y _beans_ están disponibles en la aplicación. Esas clases específicas se pueden proporcionar como argumento de la anotación:
 
 ```java
 @Configuration
@@ -578,7 +597,7 @@ public class MainConfig {
 }
 ```
 
-Por último, esta anotación sirve para importar clases no relacionadas con `@Configuration`, es decir, además de importar configuraciones de clases `@Configuration`, también se pueden importar otras clases que no estén anotadas con `@Configuration` pero que sean necesarios en la configuración principal.
+Por último, `@Import` también permite importar clases que no están anotadas con `@Configuration`, asegurando que estas clases estén disponibles en el contexto de la aplicación. Importar clases no anotadas con `@Configuration` puede ser útil para asegurar que ciertas utilidades o servicios auxiliares estén disponibles en el contexto de la aplicación, incluso si no forman parte directa de la configuración de Spring.
 
 ```java
 @Configuration
@@ -588,13 +607,13 @@ public class MainConfig {
 }
 ```
 
-Aquí, _'MyUtilityClass'_ y _'AnotherHelper'_ son clases normales que no necesariamente son configuraciones de Spring.
+Aquí, _'MyUtilityClass'_ y _'AnotherHelper'_ son clases normales que no necesariamente son configuraciones de Spring, pero que pueden ser útiles en el contexto de la aplicación.
 
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Import.html)
+- [Javadoc - @Import](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Import.html)
 
 #### @ImportResource
 
-Podemos importar **configuraciones XML** con esta anotación. Podemos especificar las ubicaciones de los archivos XML utilizando un argumento en la anotación:
+Para importar **configuraciones XML** podemos utilizar la anotación `@ImportResource`. Se puede especificar la ubicación del archivo XML mediante el argumento de la anotación:
 
 ```java
 @Configuration
@@ -602,15 +621,23 @@ Podemos importar **configuraciones XML** con esta anotación. Podemos especifica
 class VehicleFactoryConfig {}
 ```
 
-La anotación `@ImportResource` se utiliza exclusivamente para importar configuraciones desde archivos XML dentro del contexto de Spring.
+Se pueden especificar múltiples ubicaciones de archivos XML usando `@ImportResource`, separando las ubicaciones con comas:
 
-En contraste, `@Import` se utiliza para importar configuraciones y componentes de otras clases de configuración, ya sean basadas en anotaciones o en XML, pero principalmente se usa con configuraciones basadas en anotaciones.
+```java
+@Configuration
+@ImportResource({"classpath:/annotations.xml", "classpath:/more-config.xml"})
+class VehicleFactoryConfig { }
+```
 
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/ImportResource.html)
+La anotación `@ImportResource` se utiliza **exclusivamente** para importar configuraciones desde archivos XML dentro del contexto de Spring. Esto puede ser útil en proyectos que aún dependen de configuraciones XML o cuando se integran con sistemas existentes.
+
+En contraste, `@Import` se utiliza para importar configuraciones y componentes de **otras clases de configuración**, ya sean basadas en anotaciones o en XML, pero principalmente se usa con configuraciones basadas en anotaciones.
+
+- [Javadoc - @ImportResource](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/ImportResource.html)
 
 #### @PropertySource
 
-Con esta anotación, podemos definir archivos de propiedades ('.properties' o '.yml') para la configuración de la aplicación:
+La anotación `@PropertySource` se utiliza para definir archivos de propiedades ('.properties' o '.yml') para la configuración de la aplicación:
 
 ```java
 import org.springframework.context.annotation.Configuration;
@@ -623,7 +650,7 @@ public class AppConfig {
 }
 ```
 
-Estos archivos contienen configuraciones como URLs de bases de datos, rutas de archivos, configuraciones de conexión, etc. Los archivos en `src/main/resources` se incluyen en el **classpath** durante la construcción del proyecto, además de de todas las dependencias incluidas con Maven o Gradle.
+Estos archivos pueden contener configuraciones como URLs de bases de datos, rutas de archivos, configuraciones de conexión, etc. Los archivos en `src/main/resources` se incluyen en el **classpath** durante la construcción del proyecto, además de todas las dependencias incluidas con Maven o Gradle.
 
 Las propiedades cargadas se integran con el `Environment` de Spring, lo que permite acceder a ellas desde cualquier parte de la aplicación:
 
@@ -649,13 +676,11 @@ public class MyComponent {
 }
 ```
 
-El objeto `Environment` siempre se crea en Spring y está disponible en el contexto de la aplicación, independientemente de si hay archivos de propiedades adicionales. Spring configura un Environment básico como parte de su infraestructura central.
+El objeto `Environment` está **disponible en el contexto de la aplicación** y contiene propiedades predeterminadas proporcionadas por Spring, como **valores de configuración** de la JVM (por ejemplo, `java.home`) o **propiedades del sistema**.
 
-El `Environment` puede contener propiedades predeterminadas proporcionadas por Spring, como valores de **configuración de la JVM** (como `java.home`) o **propiedades del sistema**.
+Mediante este objeto se pueden consultar los perfiles activos y el perfil actual del entorno utilizando este objeto. Esto es útil para ajustar el comportamiento de la aplicación según el perfil activo.
 
-Además, se pueden consultar los perfiles activos y el perfil actual del entorno utilizando este objeto. Esto es útil para ajustar el comportamiento de la aplicación según el perfil activo.
-
-Otra forma de acceder a una propiedad podría ser utilizar directamente la anotación [`@Value`](#value):
+Otra forma de acceder a una propiedad podría ser utilizar directamente la anotación [`@Value`](#value). Esta anotación `@Value` es útil para inyectar valores directamente en campos de clase, especialmente para casos simples.
 
 ```java
 @Component
@@ -674,7 +699,7 @@ La anotación `@PropertySource` aprovecha la función de anotaciones repetidas d
 class VehicleFactoryConfig {}
 ```
 
-En caso de **conflicto de claves**, prevalecerá el **último fichero cargado**, es decir, el último fichero sobreescribe el valor de la clave si en ambos ficheros hay una clave repetida.
+En caso de **conflicto de claves**, prevalecerá el **último archivo cargado**; es decir, el último archivo sobreescribe el valor de la clave si hay una clave repetida en ambos archivos.
 
 - [Javadoc - @PropertySource](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/PropertySource.html)
 
