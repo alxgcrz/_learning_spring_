@@ -24,7 +24,7 @@ En resumen, Spring Boot es una extensión de Spring Framework diseñada para hac
 
 ## [Spring Core Annotations](https://www.baeldung.com/spring-core-annotations)
 
-Estas anotaciones forman parte del paquete [org.springframework.beans.factory.annotation](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/beans/factory/annotation/package-summary.html) y [org.springframework.context.annotation](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/package-summary.html).
+Estas anotaciones forman parte del paquete [_'org.springframework.beans.factory.annotation'_](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/beans/factory/annotation/package-summary.html) y [_'org.springframework.context.annotation'_](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/package-summary.html).
 
 ### DI-Related Annotations
 
@@ -637,7 +637,7 @@ En contraste, `@Import` se utiliza para importar configuraciones y componentes d
 
 #### @PropertySource
 
-La anotación `@PropertySource` se utiliza para definir archivos de propiedades ('.properties' o '.yml') para la configuración de la aplicación:
+La anotación `@PropertySource` se utiliza para definir archivos de propiedades ('.properties' o '.yml') para la configuración de la aplicación. Se debe indicar la ubicación del fichero de propiedades a cargar mediante un argumento de la anotación:
 
 ```java
 import org.springframework.context.annotation.Configuration;
@@ -709,7 +709,7 @@ En caso de **conflicto de claves**, prevalecerá el **último archivo cargado**;
 
 #### @PropertySources
 
-Podemos usar esta anotación para especificar múltiples configuraciones de `@PropertySource`:
+La anotación `@PropertySources` es un contenedor que se utiliza para especificar múltiples configuraciones de `@PropertySource`:
 
 ```java
 @Configuration
@@ -722,15 +722,15 @@ class VehicleFactoryConfig {}
 
 Tenga en cuenta que desde Java 8 se puede lograr el mismo resultado con la función de anotaciones repetidas.
 
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/PropertySources.html)
+- [Javadoc - @PropertySources](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/PropertySources.html)
 
 #### @ConfigurationProperties
 
-La anotación `@ConfigurationProperties` es una anotación en Spring Boot que permite mapear propiedades externas (generalmente de archivos `.properties` o `.yaml`) a un objeto Java. Esta anotación simplifica la configuración al proporcionar una manera **estructurada y tipada** para acceder a las propiedades en una aplicación Spring.
+La anotación `@ConfigurationProperties` en Spring Boot permite mapear propiedades externas (como propiedades en archivos `.properties` o `.yaml`) a una clase Java, facilitando el acceso a configuraciones de manera **estructurada y tipada** dentro de una aplicación Spring.
 
-La anotación `@ConfigurationProperties` acepta un prefijo que indica qué propiedades del archivo se deben mapear a esta clase.
+Esta anotación acepta un prefijo que indica qué propiedades del archivo se deben mapear a la clase. Por ejemplo, al utilizar el prefijo "app", todas las propiedades que comiencen con "app." se mapearán automáticamente.
 
-Para que Spring reconozca y cargue las propiedades en la clase, se debe **habilitar el soporte** para `@ConfigurationProperties` en tu configuración de Spring. Esto se hace normalmente con la anotación `@EnableConfigurationProperties` en una clase de configuración:
+Para que Spring reconozca y cargue las propiedades en la clase, se debe **habilitar el soporte** para `@ConfigurationProperties`. Esto se suele hacer con la anotación `@EnableConfigurationProperties` en una clase de configuración:
 
 ```java
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -751,7 +751,7 @@ app.version=1.0.0
 app.features.enabled=true
 ```
 
-El prefijo "app" coincide con el prefijo de las claves. Esta sería la clase de propiedades:
+Con el prefijo "app", las propiedades anteriores se mapean a la siguiente clase:
 
 ```java
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -766,33 +766,10 @@ public class AppProperties {
     private boolean featuresEnabled;
 
     // Getters y setters
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getVersion() {
-        return version;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
-    public boolean isFeaturesEnabled() {
-        return featuresEnabled;
-    }
-
-    public void setFeaturesEnabled(boolean featuresEnabled) {
-        this.featuresEnabled = featuresEnabled;
-    }
 }
 ```
 
-Y su uso en un componente:
+El objeto `AppProperties` puede luego inyectarse y utilizarse en cualquier componente de Spring:
 
 ```java
 import org.springframework.beans.factory.annotation.Autowired;
@@ -816,7 +793,7 @@ public class AppService {
 }
 ```
 
-- [Javadoc](https://docs.spring.io/spring-boot/api/java/org/springframework/boot/context/properties/ConfigurationProperties.html)
+- [Javadoc - @ConfigurationProperties](https://docs.spring.io/spring-boot/api/java/org/springframework/boot/context/properties/ConfigurationProperties.html)
 
 - [Using Environment Variables in Spring Boot’s Properties Files - Baeldung](https://www.baeldung.com/spring-boot-properties-env-variables)
 
@@ -826,13 +803,13 @@ public class AppService {
 
 ## [Spring Web Annotations](https://www.baeldung.com/spring-mvc-annotations)
 
-Estas anotaciones forman parte del paquete [org.springframework.web.bind.annotation](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/package-summary.html).
+Estas anotaciones forman parte del paquete [_'org.springframework.web.bind.annotation'_](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/package-summary.html).
 
-- [Spring Web MVC](https://docs.spring.io/spring-framework/reference/web/webmvc.html)
+- [Spring Web MVC - Spring Framework](https://docs.spring.io/spring-framework/reference/web/webmvc.html)
 
 ### @RestController
 
-La anotación `@RestController` es una meta-anotación que combina las anotaciones `@Controller`  y `@ResponseBody`.
+La anotación `@RestController` es una meta-anotación que combina las anotaciones [`@Controller`](#controller) y [`@ResponseBody`](#responsebody) para todos los métodos de la clase, lo que significa que los valores retornados por estos métodos se serializan directamente en la respuesta HTTP (generalmente en formato JSON o XML).
 
 ```java
 @Controller
@@ -849,11 +826,19 @@ class VehicleRestController {
 }
 ```
 
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/RestController.html)
+La principal diferencia entre `@Controller` y `@RestController` es que:
+
+- `@Controller`: Se usa para los controladores tradicionales en aplicaciones web, donde los métodos de los controladores retornan vistas o datos que deben ser procesados por una vista (como un archivo HTML).
+
+- `@RestController`: Se usa para servicios RESTful y APIs, donde los métodos retornan directamente datos que se serializan en el formato adecuado (como JSON) sin necesidad de una vista intermedia.
+
+- [Javadoc - @RestController](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/RestController.html)
+
+- [Annotated Controllers - Spring Framework](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller.html)
 
 ### @CrossOrigin
 
-La anotación `@CrossOrigin` en Spring Framework es utilizada para configurar las políticas de intercambio de recursos entre diferentes dominios (CORS, por sus siglas en inglés - _"Cross-Origin Resource Sharing"_). CORS es un mecanismo de seguridad implementado por los navegadores web para restringir las solicitudes HTTP que se originan desde un dominio diferente al del servidor de destino.
+La anotación `@CrossOrigin` en Spring Framework es utilizada para configurar las políticas de intercambio de recursos entre diferentes dominios (**CORS**, por sus siglas en inglés - _"Cross-Origin Resource Sharing"_). CORS es un mecanismo de seguridad implementado por los navegadores web para restringir las solicitudes HTTP que se originan desde un dominio diferente al del servidor de destino.
 
 La anotación `@CrossOrigin` habilita la comunicación entre dominios para los métodos del controlador de solicitudes anotados:
 
@@ -871,9 +856,9 @@ public class MyController {
 }
 ```
 
-Si marcamos una clase con él, se aplica a todos los métodos del controlador de solicitudes que contiene. Podemos ajustar el comportamiento de CORS con los argumentos de esta anotación.
+En este ejemplo, se permite el acceso a <http://allowed-origin.com> para los métodos GET y POST del endpoint `/data`. Si la anotación se coloca en una clase, se aplica a todos los métodos del controlador que contiene.
 
-Se puede habilitar CORS globalmente para todos los controladores usando una clase de configuración como esta:
+También se puede habilitar CORS globalmente para todos los controladores mediante una configuración global en una clase que implemente `WebMvcConfigurer`:
 
 ```java
 @Configuration
@@ -892,31 +877,67 @@ public class CorsConfig implements WebMvcConfigurer {
 }
 ```
 
-Si se utiliza Spring Security en la aplicación, hay que asegurarse de que la configuración de CORS no entre en conflicto con las políticas de seguridad definidas en Spring Security.
+Aquí, se permiten solicitudes desde <http://domain1.com> y <https://domain2.com> con los métodos HTTP especificados. Los encabezados permitidos y expuestos se pueden definir, y se puede configurar el uso de credenciales.
 
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/CrossOrigin.html)
+Si se está utilizando Spring Security en la aplicación, es fundamental asegurarse de que la configuración de **CORS** no entre en conflicto con las políticas de seguridad definidas en Spring Security. La configuración de **CORS** en Spring Security se realiza a través de la clase `WebSecurityConfigurerAdapter`, y se puede integrar con la configuración global de **CORS** para asegurar una política coherente.
 
-- [CORS with Spring](https://www.baeldung.com/spring-cors)
+```java
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-- [CORS](https://docs.spring.io/spring-framework/reference/web/webmvc-cors.html)
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.cors()
+            .and()
+            .authorizeRequests()
+            .anyRequest().authenticated();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("http://domain1.com", "https://domain2.com"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
+        configuration.setAllowedHeaders(Arrays.asList("header1", "header2"));
+        configuration.setExposedHeaders(Arrays.asList("header3", "header4"));
+        configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+}
+```
+
+Este ejemplo configura **CORS** en la seguridad de Spring para que coincida con la configuración global y permita solicitudes desde los dominios especificados con los métodos y encabezados adecuados.
+
+- [Javadoc - @CrossOrigin](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/CrossOrigin.html)
+
+- [CORS with Spring - Baeldung](https://www.baeldung.com/spring-cors)
+
+- [CORS - Spring Framework](https://docs.spring.io/spring-framework/reference/web/webmvc-cors.html)
 
 ### Request Handling Annotations
 
 #### @RequestMapping
 
-En pocas palabras, `@RequestMapping` marca métodos manejadores de peticiones dentro de clases anotadas con `@Controller`; puede configurarse utilizando:
+En Spring Framework, la anotación `@RequestMapping` se utiliza para marcar **métodos manejadores de peticiones** dentro de clases anotadas con `@Controller` o `@RestController`.
 
-- **path (o sus alias name y value)**: indica a qué URL está mapeado el método.
+Permite mapear solicitudes HTTP a métodos de controlador específicos en función de varios criterios. Los elementos clave de `@RequestMapping` son:
 
-- **method**: define los métodos HTTP compatibles.
+- `path` (o sus alias `name` y `value`): indica a qué URL está mapeado el método.
 
-- **params**: filtra las peticiones basándose en la presencia, ausencia o valor de parámetros HTTP.
+- `method`: define los métodos HTTP compatibles.
 
-- **headers**: filtra las peticiones basándose en la presencia, ausencia o valor de cabeceras HTTP.
+- `params`: filtra las peticiones basándose en la presencia, ausencia o valor de parámetros HTTP.
 
-- **consumes**: especifica los tipos de medios que el método puede consumir en el cuerpo de la petición HTTP.
+- `headers`: filtra las peticiones basándose en la presencia, ausencia o valor de cabeceras HTTP.
 
-- **produces**: especifica los tipos de medios que el método puede producir en el cuerpo de la respuesta HTTP.
+- `consumes`: especifica los tipos de medios que el método puede consumir en el cuerpo de la petición HTTP.
+
+- `produces`: especifica los tipos de medios que el método puede producir en el cuerpo de la respuesta HTTP.
 
 ```java
 @Controller
@@ -929,7 +950,7 @@ class VehicleController {
 }
 ```
 
-Podemos proporcionar configuraciones predeterminadas para todos los métodos manejadores en una clase `@Controller` si aplicamos esta anotación a nivel de **clase**. La única excepción es la URL, que Spring no sobrescribirá con configuraciones a nivel de método, sino que **anexará las dos partes del path**.
+Podemos proporcionar configuraciones predeterminadas para todos los métodos manejadores en una clase `@Controller` aplicando `@RequestMapping` a nivel de clase. La URL base especificada a nivel de clase se combinará con los _paths_ definidos en los métodos individuales:
 
 Por ejemplo, la siguiente configuración tiene el mismo efecto que la configuración del ejemplo anterior:
 
@@ -945,17 +966,71 @@ class VehicleController {
 }
 ```
 
-Además, `@GetMapping`, `@PostMapping`, `@PutMapping`, `@DeleteMapping` y `@PatchMapping` son variantes de `@RequestMapping` donde el método HTTP ya está configurado específicamente como GET, POST, PUT, DELETE y PATCH respectivamente.
+Desde la **versión 4.3** de Spring, se introdujeron las anotaciones específicas para métodos HTTP como:
 
-Estas anotaciones están disponibles desde la **versión 4.3 de Spring**.
+- `@GetMapping`
 
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/RequestMapping.html)
+- `@PostMapping`
 
-- [Mapping Requests](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-requestmapping.html)
+- `@PutMapping`
+
+- `@DeleteMapping`
+
+- `@PatchMapping`
+
+Estas meta-anotaciones son variantes de `@RequestMapping` y permiten una configuración más concisa y específica para cada tipo de solicitud HTTP:
+
+```java
+@GetMapping("/vehicles/home")
+public String home() {
+    return "home";
+}
+```
+
+- [Javadoc - @RequestMapping](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/RequestMapping.html)
+
+- [Mapping Requests - Spring Framework](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-requestmapping.html)
+
+#### @HttpExchange
+
+Es una anotación introducida en Spring Framework 6 que nos permite definir interfaces HTTP de **forma declarativa**. Si bien el objetivo principal de `@HttpExchange` es abstraer el código del cliente HTTP con un proxy generado, la interfaz HTTP sobre la que se colocan estas anotaciones es un contrato neutral para el uso del cliente frente al servidor
+
+```java
+@HttpExchange("/persons")
+interface PersonService {
+
+  @GetExchange("/{id}")
+  Person getPerson(@PathVariable Long id);
+
+  @PostExchange
+  void add(@RequestBody Person person);
+}
+```
+
+El controlador implementa la interfaz declarada:
+
+```java
+@RestController
+class PersonController implements PersonService {
+
+  public Person getPerson(@PathVariable Long id) {
+    // ...
+  }
+
+  @ResponseStatus(HttpStatus.CREATED)
+  public void add(@RequestBody Person person) {
+    // ...
+  }
+}
+```
+
+- [Javadoc - @HttpExchange](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/service/annotation/HttpExchange.html)
+
+- [@HttpExchange - Spring Framework](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-requestmapping.html#mvc-ann-httpexchange-annotation)
 
 #### @RequestBody
 
-La anotación `@RequestBody` mapea el cuerpo de la solicitud HTTP a un objeto:
+La anotación `@RequestBody` en Spring Framework se utiliza para mapear el cuerpo de una solicitud HTTP a un objeto Java. Esta anotación es particularmente útil en los métodos de controladores que manejan solicitudes POST, PUT, o PATCH, donde los datos se envían en el cuerpo de la solicitud y no en la URL.
 
 ```java
 @PostMapping("/save")
@@ -964,9 +1039,13 @@ void saveVehicle(@RequestBody Vehicle vehicle) {
 }
 ```
 
-La deserialización es automática y depende del tipo de contenido de la solicitud.
+En el ejemplo anterior, el cuerpo de la solicitud HTTP se deserializa automáticamente en una instancia de la clase `Vehicle`. El tipo de deserialización se basa en el tipo de contenido de la solicitud, como `application/json`, `application/xml`, etc.
 
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/RequestBody.html)
+Spring utiliza un convertidor adecuado, como [Jackson para JSON](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/jackson.html), para realizar esta conversión.
+
+- [Javadoc - @RequestBody](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/RequestBody.html)
+
+- [@RequestBody - Spring Framework](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/requestbody.html)
 
 #### @PathVariable
 
