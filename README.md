@@ -22,9 +22,13 @@ En resumen, Spring Boot es una extensión de Spring Framework diseñada para hac
 
 :warning: **Sección introductoria generada por ChatGPT**
 
-## [Spring Core Annotations](https://www.baeldung.com/spring-core-annotations)
+## Spring Core Annotations
 
 Estas anotaciones forman parte del paquete [_'org.springframework.beans.factory.annotation'_](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/beans/factory/annotation/package-summary.html) y [_'org.springframework.context.annotation'_](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/package-summary.html).
+
+- [Annotation-based Container Configuration](https://docs.spring.io/spring-framework/reference/core/beans/annotation-config.html)
+
+- [Spring Core Annotations - Baeldung](https://www.baeldung.com/spring-core-annotations)
 
 ### DI-Related Annotations
 
@@ -801,11 +805,13 @@ public class AppService {
 
 ---
 
-## [Spring Web Annotations](https://www.baeldung.com/spring-mvc-annotations)
+## Spring Web Annotations
 
 Estas anotaciones forman parte del paquete [_'org.springframework.web.bind.annotation'_](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/package-summary.html).
 
 - [Spring Web MVC - Spring Framework](https://docs.spring.io/spring-framework/reference/web/webmvc.html)
+
+- [Spring Web Annotations - Baeldung](https://www.baeldung.com/spring-mvc-annotations)
 
 ### @RestController
 
@@ -1030,7 +1036,7 @@ class PersonController implements PersonService {
 
 #### @RequestBody
 
-La anotación `@RequestBody` en Spring Framework se utiliza para mapear el cuerpo de una solicitud HTTP a un objeto Java. Esta anotación es particularmente útil en los métodos de controladores que manejan solicitudes POST, PUT, o PATCH, donde los datos se envían en el cuerpo de la solicitud y no en la URL.
+La anotación `@RequestBody` en Spring Framework se utiliza para **mapear el cuerpo de una solicitud HTTP a un objeto Java**. Esta anotación es particularmente útil en los métodos de controladores que manejan solicitudes POST, PUT, o PATCH, donde los datos se envían en el cuerpo de la solicitud y no en la URL.
 
 ```java
 @PostMapping("/save")
@@ -1049,7 +1055,7 @@ Spring utiliza un convertidor adecuado, como [Jackson para JSON](https://docs.sp
 
 #### @PathVariable
 
-Esta anotación indica que un argumento de método está vinculado a una variable de plantilla URI. Si el nombre de la parte en la plantilla coincide con el nombre del argumento del método, no es necesario especificarlo en la anotación:
+La anotación `@PathVariable` se utiliza para **vincular un argumento de método a una variable de ruta** en una URI. Si el nombre de la variable en la ruta coincide con el nombre del argumento del método, no es necesario especificarlo en la anotación:
 
 ```java
 import org.springframework.web.bind.annotation.*;
@@ -1066,7 +1072,7 @@ public class UserController {
 }
 ```
 
-Sin embargo, se puede vincular un argumento (o varios argumentos) de método a una de las partes de la plantilla con `@PathVariable` si se indica como argumento de la anotación.
+Si los nombres no coinciden o si se requiere especificarlo explícitamente, se puede hacer usando `@PathVariable` con el nombre de la variable de ruta:
 
 ```java
 import org.springframework.web.bind.annotation.*;
@@ -1085,7 +1091,9 @@ public class ProductController {
 }
 ```
 
-Además, se puede marcar una variable de ruta como opcional estableciendo el argumento `required = false`:
+Si una variable de ruta es opcional, se puede indicar estableciendo el argumento de la anotación como `'required = false'`.
+
+Cuando se establece `'required = false'`, la variable de ruta puede ser omitida en la URI. Si se omite, el valor del argumento será `null` (en el caso de objetos) o el valor por defecto para tipos primitivos, como 0 para `long`:
 
 ```java
 @RequestMapping("/{id}")
@@ -1094,11 +1102,11 @@ Vehicle getVehicle(@PathVariable(required = false) long id) {
 }
 ```
 
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/PathVariable.html)
+- [Javadoc - @PathVariable](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/PathVariable.html)
 
 #### @RequestParam
 
-Se utilizas `@RequestParam` para acceder a los parámetros de solicitud HTTP:
+La anotación `@RequestParam` se utiliza para **acceder a los parámetros de solicitud HTTP**:
 
 ```java
 // "http://example.com/users?id=123"
@@ -1109,9 +1117,9 @@ public String getUser(@RequestParam String id) {
 }
 ```
 
-Tiene las mismas opciones de configuración que la anotación `@PathVariable`.
+La anotación `@RequestParam` ofrece opciones de configuración similares a las de `@PathVariable`.
 
-Además de esas configuraciones, con `@RequestParam` podemos especificar un valor inyectado cuando Spring no encuentra ningún valor o está vacío en la solicitud. Para lograr esto, tenemos que establecer el argumento _"defaultValue"_:
+Además, permite especificar un valor predeterminado para el parámetro en caso de que no se encuentre en la solicitud o esté vacío. Esto se logra mediante el atributo `defaultValue`:
 
 ```java
 @RequestMapping("/buy")
@@ -1120,17 +1128,15 @@ Car buyCar(@RequestParam(defaultValue = "5") int seatCount) {
 }
 ```
 
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/RequestParam.html)
+- [Javadoc - @RequestParam](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/RequestParam.html)
 
-- [@RequestParam](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/requestparam.html)
+- [@RequestParam - Spring Framework](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/requestparam.html)
 
 #### @ModelAttribute
 
-La anotación `@ModelAttribute` en Spring MVC es utilizada para enlazar un método o parámetro de método a un atributo de modelo. Esta anotación es útil en el contexto de controladores de Spring MVC, donde se manejan las solicitudes HTTP y se prepara la respuesta.
+La anotación `@ModelAttribute` en Spring MVC se utiliza para **vincular un método o parámetro de método a un atributo del modelo**. Esto es especialmente útil en controladores de Spring MVC, donde se manejan solicitudes HTTP y se preparan datos que serán utilizados en la vista.
 
-Cuando se usa `@ModelAttribute` en un **parámetro de método**, Spring intenta enlazar los datos de la solicitud HTTP a ese objeto. Es útil para la recepción de datos del formulario o de la solicitud HTTP.
-
-Con esta anotación podemos acceder a elementos que ya están en el modelo de un controlador MVC:
+Cuando se usa `@ModelAttribute` en un **parámetro de método**, Spring enlaza automáticamente los datos de la solicitud HTTP a ese objeto, facilitando la recepción de datos de formularios o solicitudes HTTP. Con esta anotación, también podemos acceder a elementos que ya están presentes en el modelo del controlador MVC:
 
 ```java
 // Se indica la clave del modelo en la anotación '@ModelAttribute'
@@ -1146,9 +1152,7 @@ void paintVehicle(@ModelAttribute Vehicle vehicle) {
 }
 ```
 
-Cuando se anota un método de un controlador con `@ModelAttribute`, ese método se invoca antes de que cualquier método anotado con `@RequestMapping` dentro del mismo controlador se ejecute. Esto permite preparar y agregar atributos al modelo que se utilizarán en la vista.
-
-Spring agregará automáticamente el valor de retorno del método al modelo:
+Si un método de un controlador se anota con `@ModelAttribute`, este método se ejecuta **antes** que cualquier método anotado con `@RequestMapping` en el mismo controlador. Esto permite preparar y agregar atributos al modelo que serán utilizados en la vista. Spring agrega automáticamente el valor de retorno de este método al modelo:
 
 ```java
 // Se indica la clave del modelo en la anotación '@ModelAttribute'
@@ -1164,9 +1168,9 @@ Vehicle vehicle() {
 }
 ```
 
-En Spring MVC, para procesar correctamente los datos enviados desde un formulario HTML o una solicitud HTTP POST, es **esencial enlazar** esos datos a un objeto del modelo utilizando @ModelAttribute. Si no se realiza este enlace explícitamente, Spring no podrá asignar los datos del formulario a ningún objeto y, por lo tanto, no estarán disponibles para su uso en el controlador.
+En Spring MVC, para procesar correctamente los datos enviados desde un formulario HTML o una solicitud HTTP POST, es **esencial enlazar** esos datos a un objeto del modelo utilizando `@ModelAttribute`. Si no se realiza este enlace explícitamente, Spring no podrá asignar los datos del formulario a ningún objeto y, por lo tanto, no estarán disponibles para su uso en el controlador.
 
-Al usar `@ModelAttribute`, Spring realiza automáticamente el enlace de datos entre los parámetros de solicitud y el objeto del modelo definido. Esto incluye la conversión de tipos de datos y la validación de los campos según las anotaciones de validación de Spring, como `@NotNull`, `@Size`, etc.
+El uso de `@ModelAttribute` también permite la [validación](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-validation.html) automática de los datos de entrada mediante anotaciones como `@Valid` o `@Validated`, lo que asegura que los datos recibidos cumplen con las reglas de validación antes de procesarse.
 
 En el siguiente ejemplo, se muestra un formulario en Spring:
 
@@ -1214,17 +1218,19 @@ public class EmployeeController {
 }
 ```
 
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/ModelAttribute.html)
+- [Javadoc - @ModelAttribute](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/ModelAttribute.html)
 
-- [Spring MVC and the @ModelAttribute Annotation](https://www.baeldung.com/spring-mvc-and-the-modelattribute-annotation)
+- [Spring MVC and the @ModelAttribute Annotation - Baeldung](https://www.baeldung.com/spring-mvc-and-the-modelattribute-annotation)
 
-- [@ModelAttribute](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/modelattrib-method-args.html)
+- [@ModelAttribute - Spring Framework](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/modelattrib-method-args.html)
 
-- [Model](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-modelattrib-methods.html)
+- [Model - Spring Framework](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-modelattrib-methods.html)
+
+- [Validation - Spring Framework](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-validation.html)
 
 #### @CookieValue
 
-La anotación `@CookieValue` en Spring Framework se utiliza para enlazar el valor de una cookie HTTP específica a un parámetro de método en un controlador de Spring MVC. Esto es útil cuando se necesita acceder al valor de una cookie específica enviada por el cliente en una solicitud HTTP.
+La anotación `@CookieValue` en Spring Framework se utiliza para **enlazar el valor de una _cookie_ HTTP específica a un parámetro de método** en un controlador de Spring MVC. Esto es útil cuando se necesita acceder al valor de una _cookie_ enviada por el cliente en una solicitud HTTP.
 
 ```java
 @RestController
@@ -1239,9 +1245,17 @@ public class MyController {
 }
 ```
 
-Por defecto, se requiere la presencia de la cookie. En caso contrario se lanza la excepción `MissingCookieValueException`. Se puede indicar que no es requerida con el argumento `required=false` en la anotación.
+Por defecto, la presencia de la _cookie_ es **requerida**. Si la _cookie_ no está presente, Spring lanzará una excepción `MissingCookieValueException`. Para indicar que la _cookie_ no es obligatoria, puedes usar el argumento `'required = false'` en la anotación:
 
-Se puedes usar `@CookieValue` varias veces en un método de controlador para recuperar múltiples valores de cookies:
+```java
+@GetMapping("/optionalCookie")
+public ResponseEntity<String> getOptionalCookie(@CookieValue(name = "optionalCookie", required = false) String optionalCookie) {
+    // Si la cookie "optionalCookie" no está presente, optionalCookie será null
+    return ResponseEntity.ok("Value of 'optionalCookie': " + optionalCookie);
+}
+```
+
+También es posible recuperar múltiples _cookies_ en un solo método del controlador utilizando `@CookieValue` varias veces:
 
 ```java
 @GetMapping("/getCookies")
@@ -1250,16 +1264,15 @@ public ResponseEntity<String> getCookies(@CookieValue(name = "cookie1", defaultV
     // Aquí puedes usar cookie1 y cookie2, que contendrán los valores de las cookies "cookie1" y "cookie2" respectivamente
     return ResponseEntity.ok("Value of 'cookie1': " + cookie1 + ", Value of 'cookie2': " + cookie2);
 }
-
 ```
 
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/CookieValue.html)
+- [Javadoc - @CookieValue](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/CookieValue.html)
 
-- [@CookieValue](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/cookievalue.html)
+- [@CookieValue - Spring Framework](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/cookievalue.html)
 
 #### @RequestHeader
 
-La anotación `@RequestHeader` en Spring Framework se utiliza para enlazar el valor de una cabecera HTTP específica a un parámetro de método en un controlador de Spring MVC. Esto es útil cuando necesitas acceder a valores específicos de las cabeceras HTTP enviadas por el cliente en una solicitud.
+La anotación `@RequestHeader` en Spring Framework se utiliza para **enlazar el valor de una cabecera HTTP específica a un parámetro de método** en un controlador de Spring MVC. Esto es útil cuando necesitas acceder a valores específicos de las cabeceras HTTP enviadas por el cliente en una solicitud.
 
 ```java
 @RestController
@@ -1274,19 +1287,29 @@ public class MyController {
 }
 ```
 
-Por defecto, se requiere la presencia de la cabecera, lo que significa que Spring espera encontrar la cabecera especificada. Si no se encuentra, se generará una excepción `MissingRequestHeaderException` a menos que se especifique un valor predeterminado a falso.
+Por defecto, Spring espera que **la cabecera esté presente** en la solicitud. Si la cabecera no se encuentra, se generará una excepción `MissingRequestHeaderException`. Para manejar este caso y proporcionar un valor predeterminado si la cabecera está ausente, puedes usar el atributo `defaultValue` de la anotación:
 
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/RequestHeader.html)
+```java
+@GetMapping("/getCustomHeader")
+public ResponseEntity<String> getCustomHeader(@RequestHeader(value = "X-Custom-Header", defaultValue = "defaultValue") String customHeader) {
+    // Aquí puedes usar customHeader, que contendrá el valor de la cabecera "X-Custom-Header" o "defaultValue" si no está presente
+    return ResponseEntity.ok("X-Custom-Header value: " + customHeader);
+}
+```
 
-- [@RequestHeader](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/requestheader.html)
+En este ejemplo, si la cabecera `X-Custom-Header` no está presente en la solicitud, la variable `customHeader` tomará el valor "defaultValue" en lugar de generar una excepción.
+
+- [Javadoc - @RequestHeader](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/RequestHeader.html)
+
+- [@RequestHeader - Spring Framework](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/requestheader.html)
 
 ### Response Handling Annotations
 
 #### @ResponseBody
 
-Si marcamos un método de controlador de solicitudes con `@ResponseBody`, Spring trata el resultado del método como la respuesta misma.
+La anotación `@ResponseBody` en Spring Framework se utiliza para indicar que **el valor retornado por un método de controlador debe ser vinculado directamente a la respuesta HTTP**. En otras palabras, Spring convierte automáticamente el objeto retornado en un formato específico (como JSON o XML) usando convertidores de medios configurados.
 
-Es decir, cuando un método de controlador anotado con `@ResponseBody` se invoca y retorna un objeto, Spring convierte automáticamente ese objeto en un formato específico para la respuesta HTTP. La conversión del objeto a formato se realiza a través de un convertidor de medios (media converter), que depende de la configuración de Spring y de las bibliotecas disponibles en el classpath.
+Es decir, cuando un método de controlador anotado con `@ResponseBody` se invoca y retorna un objeto, Spring convierte automáticamente ese objeto en un formato específico para la respuesta HTTP. La conversión del objeto a formato se realiza a través de un convertidor de medios (_'media converter'_), que depende de la configuración de Spring y de las bibliotecas disponibles en el classpath.
 
 Es útil cuando se está construyendo una API RESTful y se desea retornar objetos como JSON o XML en lugar de vistas HTML.
 
@@ -1315,32 +1338,82 @@ public class ExampleController {
 }
 ```
 
-Si anotamos una clase @Controller con esta anotación, todos los métodos del controlador de solicitudes la usarán. Este es el efecto de `@RestController`, que no es más que una metaanotación marcada con `@Controller` y `@ResponseBody`
+Si se anota una clase con `@ResponseBody`, todos los métodos de la clase también se verán afectados. Sin embargo, `@RestController` combina `@Controller` y `@ResponseBody`, aplicando `@ResponseBody` a todos los métodos de la clase automáticamente.
 
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/ResponseBody.html)
+Para que la conversión funcione correctamente, asegúrate de tener las bibliotecas adecuadas en el _classpath_, como Jackson para JSON o JAXB para XML. En caso de errores, se pueden usar mecanismos como `@ExceptionHandler` para manejar excepciones y devolver respuestas adecuadas.
 
-- [@ResponseBody](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/responsebody.html)
+Además, si necesitas una conversión personalizada, puedes configurar [convertidores de medios](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-config/message-converters.html) en la configuración de Spring.
+
+- [Javadoc - @ResponseBody](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/ResponseBody.html)
+
+- [@ResponseBody - Spring Framework](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/responsebody.html)
 
 #### @ExceptionHandler
 
-Con esta anotación, podemos declarar un método de manejo de errores personalizado. Spring llama a este método cuando un método de controlador de solicitudes genera cualquiera de las excepciones especificadas.
-
-La excepción detectada se puede pasar al método como argumento:
+La anotación `@ExceptionHandler` en Spring Framework se utiliza para **manejar excepciones generadas por métodos de controladores** de solicitudes. Puedes declarar un método de manejo de errores personalizado utilizando esta anotación, y Spring invocará este método cuando se detecte una excepción especificada.
 
 ```java
-@ExceptionHandler(IllegalArgumentException.class)
-void onIllegalArgumentException(IllegalArgumentException exception) {
-    // ...
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class ExampleController {
+
+    @GetMapping("/example")
+    public String exampleMethod() {
+        // Simulamos una excepción
+        throw new IllegalArgumentException("Invalid argument");
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<String> onIllegalArgumentException(IllegalArgumentException exception) {
+        // Personaliza la respuesta de error
+        return new ResponseEntity<>("Error: " + exception.getMessage(), HttpStatus.BAD_REQUEST);
+    }
 }
 ```
 
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/ExceptionHandler.html)
+Puedes manejar múltiples excepciones en un solo método usando una lista de excepciones:
 
-- [Exceptions](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-exceptionhandler.html)
+```java
+@ExceptionHandler({IllegalArgumentException.class, NullPointerException.class})
+public ResponseEntity<String> handleMultipleExceptions(Exception exception) {
+    return new ResponseEntity<>("Error: " + exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+}
+```
+
+El método anotado con `@ExceptionHandler` puede devolver diferentes tipos de respuestas, como `ResponseEntity`, para proporcionar una respuesta más completa y personalizada:
+
+```java
+@ExceptionHandler(IllegalArgumentException.class)
+public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException exception) {
+    ErrorResponse errorResponse = new ErrorResponse("Invalid argument", exception.getMessage());
+    return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+}
+```
+
+Donde `ErrorResponse` es una clase que se podría definir para encapsular detalles del error:
+
+```java
+public class ErrorResponse {
+    private String error;
+    private String message;
+
+    // Constructor, getters y setters
+}
+```
+
+- [Javadoc - @ExceptionHandler](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/ExceptionHandler.html)
+
+- [Exceptions - Spring Framework](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-exceptionhandler.html)
 
 #### @ResponseStatus
 
-Podemos especificar el código de estado HTTP deseado de la respuesta si anotamos un método manejador de solicitud con esta anotación. Podemos declarar el código de estado con el argumento `code`, o su alias, el argumento `value`.
+La anotación `@ResponseStatus` en Spring Framework se utiliza para **especificar el código de estado HTTP** de la respuesta generada por un método manejador de solicitudes. Esta anotación puede declararse en métodos de controladores de solicitudes y también en métodos de manejo de excepciones para establecer el código de estado HTTP adecuado.
+
+Puedes usar `@ResponseStatus` para asignar un código de estado HTTP a una respuesta de un método:
 
 ```java
 import org.springframework.http.HttpStatus;
@@ -1359,73 +1432,103 @@ public class ExampleController {
 }
 ```
 
-Además, podemos proporcionar un motivo utilizando el argumento `reason`:
+En este ejemplo, el método `helloWorld` devuelve un código de estado '200 OK' con la respuesta.
+
+Además, podemos proporcionar un motivo para el código de estado utilizando el argumento `reason`:
 
 ```java
 @GetMapping("/notfound")
 @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Resource not found")
 public void resourceNotFound() {
-    // Method body
+    // Método vacío con código de estado 404 y motivo "Resource not found"
 }
 ```
 
-También podemos usarlo junto con `@ExceptionHandler`:
+El argumento `reason` es opcional y se utiliza para proporcionar una descripción adicional que puede aparecer en los registros del servidor o en los detalles de la respuesta, dependiendo del cliente y del servidor.
+
+La anotación `@ResponseStatus` también puede usarse en métodos de manejo de excepciones para devolver un código de estado HTTP específico cuando se produce una excepción:
 
 ```java
-@ExceptionHandler(IllegalArgumentException.class)
-@ResponseStatus(HttpStatus.BAD_REQUEST)
-void onIllegalArgumentException(IllegalArgumentException exception) {
-    // ...
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class ExampleController {
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    void onIllegalArgumentException(IllegalArgumentException exception) {
+        // Manejo de IllegalArgumentException con código de estado 400 Bad Request
+    }
 }
 ```
 
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/ResponseStatus.html)
+En este caso, cuando se lanza una `IllegalArgumentException`, el código de estado de la respuesta será '400 Bad Request'.
 
-- [Returning Custom Status Codes from Spring Controllers](https://www.baeldung.com/spring-mvc-controller-custom-http-status-code)
+- [Javadoc - @ResponseStatus](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/annotation/ResponseStatus.html)
 
-## [Spring Boot Annotations](https://www.baeldung.com/spring-boot-annotations)
+- [Returning Custom Status Codes from Spring Controllers - Baeldung](https://www.baeldung.com/spring-mvc-controller-custom-http-status-code)
+
+## Spring Boot Annotations
 
 Spring Boot facilita la configuración de Spring con su función de configuración automática.
 
-Estas anotaciones forman parte del paquete [org.springframework.boot.autoconfigure](https://docs.spring.io/spring-boot/api/java/org/springframework/boot/autoconfigure/package-summary.html) y [org.springframework.boot.autoconfigure.condition](https://docs.spring.io/spring-boot/api/java/org/springframework/boot/autoconfigure/condition/package-summary.html).
+Estas anotaciones forman parte del paquete [_'org.springframework.boot.autoconfigure'_](https://docs.spring.io/spring-boot/api/java/org/springframework/boot/autoconfigure/package-summary.html) y [_'org.springframework.boot.autoconfigure.condition'_](https://docs.spring.io/spring-boot/api/java/org/springframework/boot/autoconfigure/condition/package-summary.html).
+
+- [Spring Boot Annotations - Baeldung](https://www.baeldung.com/spring-boot-annotations)
 
 ### @SpringBootApplication
 
-Esta anotación se utiliza para marcar la clase principal de una aplicación Spring Boot:
+La anotación `@SpringBootApplication` se utiliza para marcar la **clase principal de una aplicación Spring Boot**. Esta anotación es esencial en las aplicaciones Spring Boot, ya que combina varias configuraciones clave en una sola anotación, simplificando y automatizadno el proceso de configuración.
 
 ```java
-@SpringBootApplication
-class VehicleFactoryApplication {
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+@SpringBootApplication
+public class VehicleFactoryApplication {
     public static void main(String[] args) {
         SpringApplication.run(VehicleFactoryApplication.class, args);
     }
 }
 ```
 
-Esta anotación es una meta-anotación de las anotaciones `@Configuration`, `@EnableAutoConfiguration` y `@ComponentScan` con sus atributos predeterminados.
+Esta anotación es una **meta-anotación** de las anotaciones `@Configuration`, `@EnableAutoConfiguration` y `@ComponentScan` con sus atributos predeterminados.
 
-- [Javadoc](https://docs.spring.io/spring-boot/api/java/org/springframework/boot/autoconfigure/SpringBootApplication.html)
+- La anotación [`@Configuration`](#configuration) marca la clase como una **clase de configuración** de Spring. Esto indica que la clase puede contener métodos anotados con `@Bean`, los cuales definen los beans del contexto de aplicación de Spring.
+
+- La anotación [`@EnableAutoConfiguration`](#enableautoconfiguration) habilita la **configuración automática** de Spring Boot. Spring Boot intenta configurar automáticamente la aplicación basándose en las dependencias presentes en el _classpath_. Esto simplifica la configuración inicial y reduce la necesidad de especificar manualmente los beans de configuración.
+
+- La anotación [`@ComponentScan`](#componentscan) activa el **escaneo de componentes** en el paquete en el que se encuentra la clase principal y en los sub-paquetes. Esto permite que Spring detecte y registre componentes, servicios, controladores y otros beans definidos en el proyecto.
+
+> El método `SpringApplication.run` arranca la aplicación Spring Boot, configurando el contexto de aplicación y lanzando el servidor embebido (como Tomcat, si se está utilizando).
+
+- [Javadoc - @SpringBootApplication](https://docs.spring.io/spring-boot/api/java/org/springframework/boot/autoconfigure/SpringBootApplication.html)
+
+- [Using the @SpringBootApplication Annotation - Spring Boot](https://docs.spring.io/spring-boot/reference/using/using-the-springbootapplication-annotation.html)
 
 - [SpringApplication - Spring Boot](https://docs.spring.io/spring-boot/reference/features/spring-application.html)
 
 ### @EnableAutoConfiguration
 
-Esta anotación `@EnableAutoConfiguration`, como su nombre indica, permite habilitar la configuración automática. Significa que Spring Boot busca _beans_ de configuración automática en su classpath y los aplica automáticamente.
+La anotación `@EnableAutoConfiguration` en Spring Boot habilita la **configuración automática** de la aplicación. Spring Boot busca _beans_ de configuración automática en el _classpath_ y los aplica según las dependencias presentes.
 
-Hay que tener en cuenta que hay que usar esta anotación con `@Configuration`:
+Para utilizar `@EnableAutoConfiguration` directamente, debe ser combinada con la anotación `@Configuration`:
 
 ```java
 @Configuration
 @EnableAutoConfiguration
-class VehicleFactoryConfig {}
+public class VehicleFactoryConfig {
+    // Configuración de la aplicación
+}
 ```
 
 Por otro lado, la anotación `@SpringBootApplication` es una meta-anotación de las anotaciones `@Configuration`, `@EnableAutoConfiguration` y `@ComponentScan` con sus atributos predeterminados.
 
-Por lo tanto, si se utiliza `@SpringBootApplication` no es necesario utilizar la anotación `@EnableAutoConfiguration`.
+Eso significa que si se utiliza `@SpringBootApplication`, no es necesario utilizar la anotación `@EnableAutoConfiguration` por separado.
 
-- [Javadoc](https://docs.spring.io/spring-boot/api/java/org/springframework/boot/autoconfigure/EnableAutoConfiguration.html)
+- [Javadoc - @EnableAutoConfiguration](https://docs.spring.io/spring-boot/api/java/org/springframework/boot/autoconfigure/EnableAutoConfiguration.html)
 
 - [Auto-configuration - Spring Boot](https://docs.spring.io/spring-boot/reference/using/auto-configuration.html)
 
