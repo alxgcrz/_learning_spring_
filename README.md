@@ -280,9 +280,9 @@ public class MovieRecommender {
 
 - [Using @Value - Spring Framework](https://docs.spring.io/spring-framework/reference/core/beans/annotation-config/value-annotations.html)
 
-##### Lenguaje de Expresiones SpEl
+##### Lenguaje de Expresiones SpEL
 
-Cuando `@Value("#{expression}")` contiene una expresión SpEL, el valor se calculará dinámicamente en tiempo de ejecución.
+El **Lenguaje de Expresiones de Spring (SpEL)** permite evaluar expresiones en tiempo de ejecución dentro del contexto de Spring. Cuando `@Value("#{expression}")` contiene una expresión SpEL, el valor se calculará dinámicamente en tiempo de ejecución.
 
 ```java
 // Literal expressions
@@ -311,6 +311,10 @@ Cuando `@Value("#{expression}")` contiene una expresión SpEL, el valor se calcu
 // Seguridad de tipos con el operador ?.
 "#{otherBean?.property}" // Antes de acceder a property se valida que otherBean != null
 ```
+
+**SpEL** es útil para evaluar expresiones dinámicas en configuraciones de Spring, como valores de propiedades, condiciones, y más.
+
+Se puede usar en diversas anotaciones y configuraciones de Spring, como [`@Value`](#value), [`@ConditionalOnExpression`](#conditionalonexpression), entre otras.
 
 - [Spring Expression Language (SpEL) - Spring Framework](https://docs.spring.io/spring-framework/reference/core/expressions.html)
 
@@ -1534,13 +1538,24 @@ Eso significa que si se utiliza `@SpringBootApplication`, no es necesario utiliz
 
 ### Auto-Configuration Conditions
 
-En el contexto de Spring Framework, las condiciones de auto-configuración (`@Conditional`) permiten condicionar la aplicación de configuraciones basadas en ciertas condiciones en tiempo de ejecución.
+En el contexto de Spring Framework, las condiciones de auto-configuración (`@Conditional`) permiten aplicar configuraciones basadas en condiciones específicas durante la ejecución.
 
-Estas condiciones se utilizan ampliamente en la auto-configuración automática de Spring Boot y en la configuración personalizada de aplicaciones Spring ya que permiten una configuración modular y flexible de aplicaciones Spring, adaptándose dinámicamente según el entorno y las condiciones del sistema.
+Estas condiciones se utilizan ampliamente en la auto-configuración de Spring Boot y en la configuración personalizada de aplicaciones Spring, permitiendo una configuración modular y flexible que se adapta dinámicamente según el entorno y las condiciones del sistema.
 
-Spring proporciona **diversas condiciones predefinidas** listas para ser utilizadas.
+Spring proporciona **diversas condiciones predefinidas** listas para ser utilizadas, como `@ConditionalOnProperty` y `@ConditionalOnClass`.
 
 Estas anotaciones de configuración se pueden colocar en clases `@Configuration` o métodos `@Bean`.
+
+```java
+@Configuration
+@ConditionalOnProperty(name = "feature.enabled", havingValue = "true")
+public class FeatureConfig {
+    @Bean
+    public MyFeature myFeature() {
+        return new MyFeature();
+    }
+}
+```
 
 - [Creating Your Own Auto-configuration - Spring Boot](https://docs.spring.io/spring-boot/reference/features/developing-auto-configuration.html)
 
@@ -1548,7 +1563,7 @@ Estas anotaciones de configuración se pueden colocar en clases `@Configuration`
 
 #### @Conditional
 
-La anotación `@Conditional` se utiliza para aplicar una condición a un componente de Spring, como un _bean_ o una configuración, para que solo se active si la condición especificada se cumple en tiempo de ejecución:
+La anotación `@Conditional` se utiliza para aplicar una condición a un componente de Spring, como un _bean_ o una configuración, para que se active únicamente si la condición especificada se cumple en tiempo de ejecución:
 
 ```java
 @Configuration
@@ -1558,17 +1573,37 @@ public class ProductionConfiguration {
 }
 ```
 
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Conditional.html)
+La clase `OnProductionEnvironmentCondition` podría verificar si la aplicación se está ejecutando en un entorno de producción. Esto permite que la configuración específica solo se aplique en ese entorno, asegurando que las configuraciones adecuadas se carguen según el contexto:
+
+```java
+public class OnProductionEnvironmentCondition implements Condition {
+    @Override
+    public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
+        String env = context.getEnvironment().getProperty("env");
+        return "production".equalsIgnoreCase(env);
+    }
+}
+```
+
+- [Javadoc - @Conditional](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Conditional.html)
 
 #### @ConditionalOnClass and @ConditionalOnMissingClass
 
-Usando estas condiciones, Spring solo usará el _bean_ de configuración automática marcado si la clase en el argumento de la anotación está presente/ausente:
+Usando estas condiciones, Spring solo aplicará el _bean_ de configuración automática marcado si la clase especificada en el argumento de la anotación está presente (`@ConditionalOnClass`) o ausente (`@ConditionalOnMissingClass`) en el classpath.
 
 ```java
 @Configuration
 @ConditionalOnClass(DataSource.class)
 class MySQLAutoconfiguration {
-    //...
+    // Configuración específica para MySQL si DataSource está presente
+}
+```
+
+```java
+@Configuration
+@ConditionalOnMissingClass("com.example.SomeClass")
+class FallbackConfiguration {
+    // Configuración alternativa si SomeClass no está presente
 }
 ```
 
@@ -1578,13 +1613,21 @@ class MySQLAutoconfiguration {
 
 #### @ConditionalOnBean and @ConditionalOnMissingBean
 
-Podemos usar estas anotaciones cuando queramos definir condiciones basadas en la presencia o ausencia de un _bean_ específico:
+Podemos usar estas anotaciones cuando queramos definir condiciones basadas en la presencia (`@ConditionalOnBean`) o ausencia (`@ConditionalOnMissingBean`) de un _bean_ específico en el contexto de Spring.
 
 ```java
 @Bean
 @ConditionalOnBean(name = "dataSource")
 LocalContainerEntityManagerFactoryBean entityManagerFactory() {
-    // ...
+    // Configuración del EntityManagerFactory si dataSource está presente
+}
+```
+
+```java
+@Bean
+@ConditionalOnMissingBean(name = "dataSource")
+DataSource fallbackDataSource() {
+    // Configuración alternativa si dataSource no está presente
 }
 ```
 
@@ -1594,16 +1637,23 @@ LocalContainerEntityManagerFactoryBean entityManagerFactory() {
 
 #### @ConditionalOnProperty
 
-Con esta anotación, podemos poner condiciones sobre los valores de las propiedades:
+Con esta anotación, podemos poner condiciones sobre los valores de las propiedades en el archivo de configuración de la aplicación, como `application.properties` o `application.yml`.
 
 ```java
 @Bean
-@ConditionalOnProperty(
-    name = "usemysql", 
-    havingValue = "local"
-)
+@ConditionalOnProperty(name = "usemysql", havingValue = "local")
 DataSource dataSource() {
     // ...
+}
+```
+
+También podemos usar `@ConditionalOnProperty` para condicionar la configuración basada en la presencia o ausencia de una propiedad utilizando el atributo `matchIfMissing`:
+
+```java
+@Bean
+@ConditionalOnProperty(name = "usemysql", matchIfMissing = true)
+DataSource defaultDataSource() {
+    // Configuración del DataSource por defecto si 'usemysql' no está presente
 }
 ```
 
@@ -1611,12 +1661,12 @@ DataSource dataSource() {
 
 #### @ConditionalOnResource
 
-Podemos hacer que Spring use una definición solo cuando un recurso específico esté presente:
+Podemos hacer que Spring use una definición solo cuando un recurso específico esté presente en el classpath:
 
 ```java
 @ConditionalOnResource(resources = "classpath:mysql.properties")
 Properties additionalProperties() {
-    // ...
+    // Configuración adicional si 'mysql.properties' está presente en el classpath
 }
 ```
 
@@ -1624,12 +1674,13 @@ Properties additionalProperties() {
 
 #### @ConditionalOnWebApplication and @ConditionalOnNotWebApplication
 
-Con estas anotaciones podemos crear condiciones en función de si la aplicación actual es o no una aplicación web:
+Con estas anotaciones podemos crear condiciones en función de si la aplicación actual es una aplicación web (`@ConditionalOnWebApplication`) o no es una aplicación web (`@ConditionalOnNotWebApplication`):
 
 ```java
+@Bean
 @ConditionalOnWebApplication
 HealthCheckController healthCheckController() {
-    // ...
+    // Configuración del controlador de verificación de salud si es una aplicación web
 }
 ```
 
@@ -1639,29 +1690,31 @@ HealthCheckController healthCheckController() {
 
 #### @ConditionalOnExpression
 
-Podemos utilizar esta anotación en situaciones más complejas. Spring usará la definición marcada cuando la expresión SpEL se evalúe como verdadera:
+Podemos utilizar esta anotación en situaciones más complejas. Spring usará la definición marcada cuando la [expresión SpEL](#lenguaje-de-expresiones-spel) se evalúe como verdadera:
 
 ```java
 @Bean
 @ConditionalOnExpression("${usemysql} && ${mysqlserver == 'local'}")
 DataSource dataSource() {
-    // ...
+    // Configuración del DataSource si usemysql es true y mysqlserver es 'local'
 }
 ```
 
 - [Javadoc - @ConditionalOnExpression](https://docs.spring.io/spring-boot/api/java/org/springframework/boot/autoconfigure/condition/ConditionalOnExpression.html)
 
-## [Spring Scheduling Annotations](https://www.baeldung.com/spring-scheduling-annotations)
+## Spring Scheduling Annotations
 
-Cuando la ejecución de un solo hilo no es suficiente, podemos usar anotaciones del paquete [org.springframework.scheduling.annotation](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/scheduling/annotation/Scheduled.html).
+Cuando la ejecución de un solo hilo no es suficiente, podemos usar anotaciones del paquete [_'org.springframework.scheduling.annotation'_](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/scheduling/annotation/Scheduled.html).
 
-- [Task Execution and Scheduling](https://docs.spring.io/spring-framework/reference/integration/scheduling.html#scheduling-annotation-support)
+- [Task Execution and Scheduling - Spring Framework](https://docs.spring.io/spring-framework/reference/integration/scheduling.html#scheduling-annotation-support)
+
+- [Task Execution and Scheduling - Spring Boot](https://docs.spring.io/spring-boot/reference/features/task-execution-and-scheduling.html)
+
+- [Spring Scheduling Annotations - Baeldung](https://www.baeldung.com/spring-scheduling-annotations)
 
 ### @EnableAsync
 
-Con esta anotación, podemos habilitar la funcionalidad asíncrona en Spring.
-
-Debemos usarla junto con `@Configuration`:
+Esta anotación habilita la funcionalidad asíncrona en Spring. Para habilitarla, debemos usar `@EnableAsync` junto con `@Configuration`:
 
 ```java
 @Configuration
@@ -1669,15 +1722,44 @@ Debemos usarla junto con `@Configuration`:
 class VehicleFactoryConfig {}
 ```
 
-Ahora que habilitamos las llamadas asincrónicas, podemos usar `@Async` para definir los métodos que las admiten.
+Ahora que hemos habilitado las llamadas asíncronas, podemos usar `@Async` para definir los métodos que las admiten:
 
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/scheduling/annotation/EnableAsync.html)
+```java
+@Async
+public void processOrder() {
+    // Código para procesar la orden de manera asíncrona
+}
+```
+
+El método `processOrder` se ejecutará en un hilo separado, permitiendo que el hilo principal continúe su ejecución sin esperar a que este método termine.
+
+Además, es posible configurar un `Executor` personalizado si se necesita un control más fino sobre los hilos utilizados para las tareas asíncronas:
+
+```java
+@Configuration
+@EnableAsync
+public class AsyncConfig {
+
+    @Bean(name = "taskExecutor")
+    public Executor taskExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(5);
+        executor.setMaxPoolSize(10);
+        executor.setQueueCapacity(25);
+        executor.initialize();
+        return executor;
+    }
+
+}
+```
+
+Configurar un `Executor` personalizado permite ajustar el número de hilos y la capacidad de la cola para las tareas asíncronas. Con esta configuración, cualquier método anotado con `@Async` utilizará este `taskExecutor` definido.
+
+- [Javadoc - @EnableAsync](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/scheduling/annotation/EnableAsync.html)
 
 ### @EnableScheduling
 
-Con esta anotación, podemos habilitar la programación en la aplicación.
-
-Debemos usarla junto con `@Configuration`:
+Esta anotación habilita la programación en la aplicación. Para habilitarla, debemos usar `@EnableScheduling` junto con `@Configuration`:
 
 ```java
 @Configuration
@@ -1685,15 +1767,24 @@ Debemos usarla junto con `@Configuration`:
 class VehicleFactoryConfig {}
 ```
 
-Como resultado, ahora podemos ejecutar métodos periódicamente con `@Scheduled`.
+Como resultado, ahora podemos ejecutar métodos periódicamente con `@Scheduled`:
 
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/scheduling/annotation/EnableScheduling.html)
+```java
+@Scheduled(fixedRate = 5000)
+public void reportCurrentTime() {
+    System.out.println("The time is now " + new Date());
+}
+```
+
+El método `reportCurrentTime` se ejecutará cada 5 segundos, imprimiendo la hora actual. [`@Scheduled`](#scheduled) admite varios parámetros como `fixedRate`, `fixedDelay` y `cron` para definir la frecuencia de ejecución de los métodos.
+
+- [Javadoc - @EnableScheduling](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/scheduling/annotation/EnableScheduling.html)
 
 ### @Async
 
-La anotación `@Async` en Spring se utiliza para marcar un método como **asíncrono**, lo que permite que dicho método sea ejecutado en un hilo separado o en un pool de hilos dedicado administrado por Spring. Esto es útil para operaciones que no necesitan bloquear el hilo principal de ejecución, como tareas de larga duración, operaciones de E/S intensivas, o llamadas a servicios externos.
+La anotación `@Async` en Spring se utiliza para marcar un método como **asíncrono**, permitiendo que el método se ejecute en un hilo separado o en un pool de hilos administrado por Spring. Esto es útil para operaciones que no necesitan bloquear el hilo principal de ejecución, como tareas de larga duración, operaciones de E/S intensivas, o llamadas a servicios externos.
 
-Para lograr esto, podemos anotar el método con `@Async`:
+Para marcar un método como asíncrono, simplemente lo anotamos con `@Async`:
 
 ```java
 @Async
@@ -1706,14 +1797,15 @@ Si aplicamos esta anotación a una clase, todos los métodos se llamarán de for
 
 Para que `@Async` funcione correctamente, la clase que contiene el método anotado debe ser administrada por Spring (normalmente usando `@Service`, `@Component`, o `@Repository`)
 
-Tenga en cuenta que debemos habilitar las llamadas asincrónicas para que funcione esta anotación, con `@EnableAsync` o configuración XML.
+Es importante habilitar las llamadas asíncronas con `@EnableAsync` o mediante configuración XML.
 
-Un método anotado con `@Async` puede devolver un valor envuelto en un _"Future"_ si se necesita obtener el resultado de la ejecución asíncrona:
+Un método anotado con `@Async` puede devolver un valor envuelto en un `Future` si se necesita obtener el resultado de la ejecución asíncrona:
 
 ```java
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import java.util.concurrent.Future;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class MyService {
@@ -1723,32 +1815,28 @@ public class MyService {
         // Método que retorna un resultado de manera asíncrona
         return new AsyncResult<>("Resultado asíncrono");
     }
-}
-```java
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
-import java.util.concurrent.Future;
-
-@Service
-public class MyService {
 
     @Async
-    public Future<String> asyncMethodWithReturn() {
-        // Método que retorna un resultado de manera asíncrona
-        return new AsyncResult<>("Resultado asíncrono");
+    public CompletableFuture<String> asyncMethodWithCompletableFuture() {
+        // Método que retorna un resultado de manera asíncrona usando CompletableFuture
+        return CompletableFuture.completedFuture("Resultado asíncrono con CompletableFuture");
     }
 }
 ```
 
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/scheduling/annotation/Async.html)
+El uso de `CompletableFuture` permite manejar operaciones más complejas y no bloqueantes.
 
-- [How To Do @Async in Spring](https://www.baeldung.com/spring-async)
+- [Javadoc - @Async](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/scheduling/annotation/Async.html)
+
+- [Javadoc - CompletableFuture](https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/concurrent/CompletableFuture.html)
+
+- [How To Do @Async in Spring - Baeldung](https://www.baeldung.com/spring-async)
 
 ### @Scheduled
 
-La anotación `@Scheduled` en Spring se utiliza para programar la ejecución de métodos a intervalos específicos, en momentos particulares o según expresiones cron. Esta anotación es útil para tareas recurrentes y automatización de procesos dentro de una aplicación Spring.
+La anotación `@Scheduled` en Spring se utiliza para programar la ejecución de métodos a intervalos específicos, en momentos específicos o según expresiones cron. Esta anotación es útil para tareas recurrentes y automatización de procesos dentro de una aplicación Spring.
 
-Si necesitamos que un método se ejecute periódicamente, podemos usar esta anotación:
+Para ejecutar un método periódicamente, podemos usar esta anotación:
 
 ```java
 @Scheduled(fixedRate = 10000)
@@ -1757,19 +1845,20 @@ void checkVehicle() {
 }
 ```
 
-Podemos usarlo para ejecutar un método a **intervalos fijos**, o podemos ajustarlo con **expresiones similares a cron**:
+Podemos usarla para ejecutar un método a **intervalos fijos** o con **expresiones cron**:
 
-- **'fixedRate'**: ejecuta el método con una tasa fija en milisegundos, independientemente de cuánto tiempo haya tomado la ejecución anterior.
+- **`fixedRate`**: ejecuta el método con una tasa fija en milisegundos, independientemente de cuánto tiempo haya tomado la ejecución anterior.
 
-- **'fixedDelay'**: ejecuta el método con un retraso fijo en milisegundos después de que se completa la ejecución anterior.
+- **`fixedDelay`**: ejecuta el método con un retraso fijo en milisegundos después de que se completa la ejecución anterior.
 
-- **'initialDelay'**: especifica un retraso inicial en milisegundos antes de la primera ejecución del método.
+- **`initialDelay`**: especifica un retraso inicial en milisegundos antes de la primera ejecución del método.
 
-- **'cron'**: permite una expresión cron para definir horarios más complejos y específicos.
+- **`cron`**: permite una expresión cron para definir horarios más complejos y específicos.
 
-`@Scheduled` aprovecha la función de anotaciones repetidas de Java 8, lo que significa que podemos marcar un método con ella varias veces:
+La anotación `@Scheduled` aprovecha la función de anotaciones repetidas de Java 8, lo que significa que podemos marcar un método con ella varias veces:
 
 ```java
+// Se ejecutará cada 10 segundos y también a la hora en punto de lunes a viernes.
 @Scheduled(fixedRate = 10000)
 @Scheduled(cron = "0 * * * * MON-FRI")
 void checkVehicle() {
@@ -1783,13 +1872,13 @@ Además, debemos habilitar la programación para que esta anotación funcione, p
 
 Para que `@Scheduled` funcione correctamente, la clase que contiene el método anotado debe ser administrada por Spring (normalmente utilizando `@Component`, `@Service`, o similar).
 
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/scheduling/annotation/Scheduled.html)
+- [Javadoc - @Scheduled](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/scheduling/annotation/Scheduled.html)
 
-- [The @Scheduled Annotation in Spring](https://www.baeldung.com/spring-scheduled-tasks)
+- [The @Scheduled Annotation in Spring - Baeldung](https://www.baeldung.com/spring-scheduled-tasks)
 
 ### @Schedules
 
-Podemos usar esta anotación para especificar múltiples reglas `@Scheduled`:
+La anotación `@Schedules` permite especificar múltiples reglas `@Scheduled`:
 
 ```java
 @Schedules({ 
@@ -1801,38 +1890,90 @@ void checkVehicle() {
 }
 ```
 
-Hay que tener en cuenta que desde Java 8 se puede lograr lo mismo con la función de anotaciones repetidas.
+Desde Java 8, se puede lograr lo mismo utilizando anotaciones repetidas:
 
-## [Spring Data Annotations](https://www.baeldung.com/spring-data-annotations)
+```java
+@Scheduled(fixedRate = 10000)
+@Scheduled(cron = "0 * * * * MON-FRI")
+void checkVehicle() {
+    // ...
+}
+```
+
+Las anotaciones repetidas simplifican el uso de múltiples reglas `@Scheduled`, haciendo que el código sea más limpio y fácil de mantener.
+
+- [Javadoc - @Schedules](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/scheduling/annotation/Schedules.html)
+
+## Spring Data Annotations
 
 **Spring Data** proporciona una abstracción sobre las tecnologías de almacenamiento de datos. Por lo tanto, nuestro código de lógica de negocios puede ser mucho más independiente de la implementación de persistencia subyacente. Además, Spring simplifica el manejo de los detalles del almacenamiento de datos que dependen de la implementación.
 
-- [Javadoc](https://docs.spring.io/spring-data/commons/docs/current/api/)
+- [Javadoc - Spring Data Core](https://docs.spring.io/spring-data/commons/docs/current/api/)
 
-- [Data Access](https://docs.spring.io/spring-framework/reference/data-access.html)
+- [Data Access - Spring Framework](https://docs.spring.io/spring-framework/reference/data-access.html)
+
+- [Spring Data Annotations - Baeldung](https://www.baeldung.com/spring-data-annotations)
 
 ### Common Spring Data Annotations
 
 #### @Transactional
 
-La anotación `@Transactional` en Spring se utiliza para administrar transacciones en métodos o clases de manera declarativa. Esta anotación permite que los métodos anotados se ejecuten dentro de una transacción gestionada por Spring, asegurando la atomicidad, consistencia, aislamiento y durabilidad (ACID) de las operaciones realizadas en la base de datos u otros recursos transaccionales.
+La anotación `@Transactional` en Spring administra transacciones de manera declarativa en métodos o clases. Esta anotación permite que los métodos anotados se ejecuten dentro de una transacción gestionada por Spring, asegurando la atomicidad, consistencia, aislamiento y durabilidad (ACID) de las operaciones realizadas en la base de datos u otros recursos transaccionales.
 
-Cuando queramos configurar el comportamiento transaccional de un método, podemos hacerlo con:
+Para configurar el comportamiento transaccional de un método, podemos usar:
 
 ```java
 @Transactional
-void pay() {}
+void pay() {
+    // ...
+}
 ```
 
-Si aplicamos esta anotación a nivel de clase, funciona en todos los métodos dentro de la clase. Sin embargo, podemos anular sus efectos aplicándolo a un método específico.
+La anotación `@Transactional` puede aplicarse a interfaces y métodos de interfaces, no solo a clases y métodos de clases.
 
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/transaction/annotation/Transactional.html)
+Si aplicamos esta anotación a nivel de clase, afecta a todos los métodos dentro de la clase. Podemos anular su comportamiento aplicando una configuración diferente a un método específico:
 
-- [Transactions with Spring and JPA](https://www.baeldung.com/transaction-configuration-with-jpa-and-spring)
+```java
+@Transactional
+public class PaymentService {
+
+    @Transactional
+    public void pay() {
+        // ...
+    }
+
+    @Transactional(readOnly = true)
+    public void checkPaymentStatus() {
+        // ...
+    }
+}
+```
+
+La anotación `@Transactional` admite varios atributos para personalizar el comportamiento transaccional:
+
+- `propagation`: define cómo debe comportarse la transacción actual en relación con las transacciones existentes.
+
+- `isolation`: especifica el nivel de aislamiento de la transacción.
+
+- `timeout`: define el tiempo máximo que puede durar la transacción antes de ser abortada.
+
+- `readOnly`: indica si la transacción es solo de lectura.
+
+- `rollbackFor`: especifica las excepciones que deben provocar un rollback de la transacción.
+
+Además, `@Transactional` es compatible con varios gestores de transacciones, como JPA, JDBC, y JMS.
+
+Para que `@Transactional` funcione correctamente, la clase que contiene el método anotado debe ser administrada por Spring (normalmente utilizando `@Service`, `@Component`, o similar).
+
+- [Javadoc - @Transactional](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/transaction/annotation/Transactional.html)
+
+- [Transactions with Spring and JPA - Baeldung](https://www.baeldung.com/transaction-configuration-with-jpa-and-spring)
+
+- [Using @Transactional - Spring Framework](https://docs.spring.io/spring-framework/reference/data-access/transaction/declarative/annotations.html)
 
 #### @NoRepositoryBean
 
-La anotación `@NoRepositoryBean` en Spring se utiliza para indicar a Spring que una interfaz de repositorio específica no debe ser considerada como un repositorio gestionado por **Spring Data**. Esto significa que no se creará una instancia de Spring para esa interfaz de repositorio en particular, y por lo tanto, no se aplicarán las características de repositorio típicas como la generación automática de consultas y métodos CRUD.
+La anotación `@NoRepositoryBean` en Spring se utiliza para indicar que una interfaz de repositorio específica no debe ser considerada como un repositorio gestionado por Spring Data. Esto significa que Spring no creará una instancia de esa interfaz de repositorio, y no se aplicarán las características típicas de repositorio, como la generación automática de consultas y métodos CRUD.
 
 ```java
 import org.springframework.data.repository.NoRepositoryBean;
@@ -1851,26 +1992,37 @@ public interface UserRepository extends MyBaseRepository<User, Long> {
 
 La anotación `@NoRepositoryBean` es útil cuando se requiere definir una interfaz base para repositorios que contengan métodos comunes o personalizados, pero que no represente un repositorio que deba ser instanciado directamente por **Spring Data**.
 
-- [Javadoc](https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/repository/NoRepositoryBean.html)
+La anotación `@NoRepositoryBean` es útil cuando se requiere definir una interfaz base para repositorios que contengan métodos comunes o personalizados, pero que no represente un repositorio que deba ser instanciado directamente por Spring Data. Esto es especialmente útil en proyectos grandes donde se necesita una estructura de repositorios más compleja y reutilizable.
+
+- [Javadoc - @NoRepositoryBean](https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/repository/NoRepositoryBean.html)
 
 #### @Param
 
-Podemos pasar parámetros con nombre a nuestras consultas usando `@Param`:
+La anotación `@Param` permite pasar parámetros con nombre a nuestras consultas:
 
 ```java
 @Query("FROM Person p WHERE p.name = :name")
 Person findByName(@Param("name") String name);
 ```
 
-Tenga en cuenta que nos referimos al parámetro con la sintaxis `:name`.
+Es importante referirse al parámetro con la sintaxis `:name`. Usar parámetros con nombre mejora la legibilidad y evita errores en las consultas.
 
-- [Javadoc](https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/repository/query/Param.html)
+`@Param` es útil tanto en consultas JPQL como en consultas SQL nativas.
 
-- [Spring Data JPA @Query](https://www.baeldung.com/spring-data-jpa-query)
+También se puede usar `@Param` en consultas con múltiples parámetros:
+
+```java
+@Query("FROM Person p WHERE p.name = :name AND p.age = :age")
+Person findByNameAndAge(@Param("name") String name, @Param("age") int age);
+```
+
+- [Javadoc - @Param](https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/repository/query/Param.html)
+
+- [Spring Data JPA @Query - Baeldung](https://www.baeldung.com/spring-data-jpa-query)
 
 #### @Id
 
-La anotación `@Id` marca un campo en una clase de modelo como **clave principal**:
+La anotación `@Id` marca un campo en una clase de modelo como la **clave principal**:
 
 ```java
 class Person {
@@ -1883,13 +2035,15 @@ class Person {
 }
 ```
 
-Dado que es independiente de la implementación, hace que una clase de modelo sea fácil de usar con múltiples motores de almacenamiento de datos.
+Al ser independiente de la implementación, permite que una clase de modelo sea compatible con múltiples motores de almacenamiento de datos.
 
-- [Javadoc](https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/annotation/Id.html)
+La clave principal es fundamental en el contexto de las bases de datos, ya que **identifica de manera única cada entidad**.
+
+- [Javadoc - @Id](https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/annotation/Id.html)
 
 #### @Transient
 
-Podemos usar esta anotación para marcar un campo en una clase de modelo como **transitorio**. Por lo tanto, el motor del almacén de datos no leerá ni escribirá el valor de este campo:
+Podemos usar esta anotación para marcar un campo en una clase de modelo como **transitorio**. Esto significa que el motor de almacenamiento de datos no leerá ni escribirá el valor de este campo:
 
 ```java
 class Person {
@@ -1904,21 +2058,23 @@ class Person {
 }
 ```
 
-Al igual que `@Id`, `@Transient` también es independiente de la implementación, lo que hace que sea conveniente utilizarlo con múltiples implementaciones de almacenes de datos.
+Al igual que `@Id`, la anotación `@Transient` también es independiente de la implementación, lo que facilita su uso con múltiples implementaciones de almacenamiento de datos.
 
-- [Javadoc](https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/annotation/Transient.html)
+Esta anotación es útil para campos **calculados o temporales** que no necesitan ser persistidos en la base de datos.
+
+- [Javadoc - @Transient](https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/annotation/Transient.html)
 
 #### Campos de auditoría
 
-En Spring Data, las anotaciones de campos de auditoría son utilizadas para mantener un rastro automático de ciertas acciones comunes, como la creación y modificación de entidades. Estas anotaciones permiten que Spring Data gestione automáticamente campos como el usuario que creó la entidad, el usuario que la modificó, y las fechas de creación y modificación:
+En Spring Data, las anotaciones de campos de auditoría se utilizan para mantener un rastro automático de ciertas acciones comunes, como la creación y modificación de entidades. Estas anotaciones permiten que Spring Data gestione automáticamente campos como el usuario que creó o modificó la entidad, y las fechas de creación y modificación:
 
-- **`@CreatedBy`**: se utiliza para marcar un campo que debe contener el usuario que creó la entidad. Este campo se llena automáticamente cuando la entidad se persiste por primera vez.
+- **`@CreatedBy`**: marca un campo que debe contener el usuario que creó la entidad. Este campo se llena automáticamente cuando la entidad se persiste por primera vez.
 
 - **`@LastModifiedBy`**: indica el usuario que realizó la última modificación a la entidad. Este campo se actualiza automáticamente cada vez que la entidad se modifica.
 
 - **`@CreatedDate`**: marca un campo para almacenar la fecha y hora en que la entidad fue creada. Este campo se llena automáticamente cuando la entidad se persiste por primera vez.
 
-- **`@LastModifiedDate`**: se utiliza para anotar un campo que debe contener la fecha y hora de la última modificación de la entidad. Este campo se actualiza automáticamente cada vez que la entidad se modifica.
+- **`@LastModifiedDate`**: anota un campo que debe contener la fecha y hora de la última modificación de la entidad. Este campo se actualiza automáticamente cada vez que la entidad se modifica.
 
 ```java
 public class Person {
@@ -1942,7 +2098,7 @@ public class Person {
 }
 ```
 
-Para utilizar estas anotaciones, se debe seguir algunos pasos adicionales para habilitar la auditoría en una aplicación Spring:
+Para utilizar estas anotaciones, es necesario seguir algunos pasos adicionales para habilitar la auditoría en una aplicación Spring:
 
 - Añadir la anotación `@EnableJpaAuditing` en una clase de configuración de Spring para habilitar la auditoría:
 
@@ -1956,28 +2112,32 @@ public class AuditConfig {
 - Implementar la interfaz `AuditorAware` para especificar cómo se obtiene el usuario actual:
 
 ```java
-@Component
-public class AuditorAwareImpl implements AuditorAware<String> {
+import org.springframework.data.domain.AuditorAware;
+import org.springframework.stereotype.Component;
+
+@Component("auditorProvider")
+public class AuditorAwareImpl implements AuditorAware<User> {
 
     @Override
-    public Optional<String> getCurrentAuditor() {
-        // Lógica para obtener el usuario actual, por ejemplo, del contexto de seguridad de Spring
-        return Optional.of(SecurityContextHolder.getContext().getAuthentication().getName());
+    public Optional<User> getCurrentAuditor() {
+        // Lógica para obtener el usuario actual
+        return Optional.of(new User("currentUser"));
     }
 }
+
 ```
 
-- [Javadoc](https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/annotation/package-summary.html)
+- [Auditing with JPA, Hibernate, and Spring Data JPA - Baeldung](https://www.baeldung.com/database-auditing-jpa)
 
-- [Auditing with JPA, Hibernate, and Spring Data JPA](https://www.baeldung.com/database-auditing-jpa)
-
-- [Auditing](https://docs.spring.io/spring-data/jpa/reference/auditing.html)
+- [Auditing - Spring Data](https://docs.spring.io/spring-data/jpa/reference/auditing.html)
 
 ### Spring Data JPA Annotations
 
+- [Javadoc - Spring Data JPA](https://docs.spring.io/spring-data/jpa/docs/current/api/)
+
 #### @Query
 
-Con la anotación `@Query`, se proporciona proporcionar una **implementación JPQL** para un método de repositorio:
+Con la anotación `@Query`, se proporciona una **implementación JPQL** para un método de repositorio:
 
 ```java
 @Query("SELECT COUNT(*) FROM Person p")
@@ -1991,20 +2151,26 @@ Además, se puede utilizar parámetros con nombre con la anotación `@Param`:
 Person findByName(@Param("name") String name);
 ```
 
-Spring se pueden utilizar consultas SQL nativas, si se configura el argumento `nativeQuery = true`:
+También se pueden utilizar **consultas SQL nativas** configurando el argumento `nativeQuery = true`:
 
 ```java
 @Query(value = "SELECT AVG(p.age) FROM person p", nativeQuery = true)
 int getAverageAge();
 ```
 
-- [Spring Data JPA @Query](https://www.baeldung.com/spring-data-jpa-query)
+La anotación `@Query` es útil para consultas complejas que no se pueden expresar fácilmente con los métodos de consulta derivados. Además, permite el uso de expresiones SpEL (_Spring Expression Language_) para consultas dinámicas.
+
+- [Javadoc - @Query](https://docs.spring.io/spring-data/jpa/docs/current/api/org/springframework/data/jpa/repository/Query.html)
+
+- [JPA Query Methods - Spring Data](https://docs.spring.io/spring-data/jpa/reference/jpa/query-methods.html)
+
+- [Spring Data JPA @Query - Baeldung](https://www.baeldung.com/spring-data-jpa-query)
 
 #### @Procedure
 
-Con Spring Data JPA podemos llamar fácilmente a procedimientos almacenados desde repositorios.
+Con Spring Data JPA, podemos llamar fácilmente a procedimientos almacenados desde repositorios.
 
-Primero, se necesita declarar el repositorio en la clase de entidad usando anotaciones JPA estándar:
+Primero, es necesario declarar el procedimiento almacenado en la clase de entidad usando anotaciones JPA estándar. La anotación `@NamedStoredProcedureQuery` se utiliza para definir procedimientos almacenados en la entidad:
 
 ```java
 @NamedStoredProcedureQueries({ 
@@ -2027,16 +2193,27 @@ Primero, se necesita declarar el repositorio en la clase de entidad usando anota
 class Person {}
 ```
 
-Después de esto, se puedes hacer referencia a él en el repositorio con el nombre que se declaramos en el argumento `name`:
+Después de esto, se puede hacer referencia a él en el repositorio usando el nombre declarado en el argumento `name`:
 
 ```java
 @Procedure(name = "count_by_name")
 long getCountByName(@Param("name") String name);
 ```
 
+La anotación `@Procedure` se utiliza para llamar a procedimientos almacenados definidos en la entidad, así como a otros procedimientos almacenados que estén definidos en otras entidades o directamente en la base de datos:
+
+```java
+@Procedure(procedureName = "person.count_by_name")
+long getCountByNameDirect(@Param("name") String name);
+```
+
+Los procedimientos almacenados son útiles para encapsular lógica compleja en la base de datos y mejorar el rendimiento.
+
+- [Javadoc - @Procedure](https://docs.spring.io/spring-data/jpa/docs/current/api/org/springframework/data/jpa/repository/query/Procedure.html)
+
 #### @Lock
 
-La anotación `@Lock` en Spring es parte del módulo **Spring Data JPA** y se utiliza para especificar el nivel de bloqueo que se debe aplicar a una consulta JPA en las operaciones de acceso a la base de datos. Esta anotación es útil para controlar la concurrencia y evitar problemas como condiciones de carrera, especialmente en entornos donde múltiples transacciones pueden intentar acceder o modificar los mismos datos simultáneamente.
+La anotación `@Lock` en Spring Data JPA se utiliza para especificar el nivel de bloqueo que debe aplicarse a una consulta JPA en las operaciones de acceso a la base de datos. Esta anotación es fundamental para controlar la concurrencia y evitar problemas como las condiciones de carrera, especialmente en entornos donde múltiples transacciones podrían intentar acceder o modificar los mismos datos simultáneamente.
 
 La anotación `@Lock` admite varios tipos principales de bloqueo:
 
@@ -2046,31 +2223,33 @@ La anotación `@Lock` admite varios tipos principales de bloqueo:
 
 - **`LockModeType.PESSIMISTIC_WRITE`**: este bloqueo evita que otras transacciones lean o actualicen los datos mientras se mantiene el bloqueo. Es útil cuando se necesita asegurarse de que nadie más pueda leer o modificar los datos hasta que la transacción actual termine.
 
-- **`LockModeType.PESSIMISTIC_FORCE_INCREMENT`**: adquiere un bloqueo de escritura pesimista y además incrementa la versión de la entidad. Asegura que las transacciones concurrentes vean la nueva versión de la entidad.
+- **`LockModeType.PESSIMISTIC_FORCE_INCREMENT`**: adquiere un bloqueo de escritura pesimista e incrementa la versión de la entidadasegurando que las transacciones concurrentes vean la nueva versión de la entidad.
 
 - **`LockModeType.OPTIMISTIC`**: utiliza el bloqueo optimista, que se basa en versiones. Permite que múltiples transacciones lean y actualicen los datos, pero verifica al final de la transacción si los datos han cambiado desde la última lectura. Si es así, lanza una excepción `OptimisticLockException`.
 
-- **`LockModeType.OPTIMISTIC_FORCE_INCREMENT`**: similar al bloqueo optimista, pero además incrementa la versión de la entidad. Es útil para asegurar que cualquier otra transacción que quiera leer los datos tendrá que esperar hasta que la transacción actual complete.
+- **`LockModeType.OPTIMISTIC_FORCE_INCREMENT`**: similar al bloqueo optimista, pero además incrementa la versión de la entidad, asegurando que cualquier otra transacción que quiera leer los datos tendrá que esperar hasta que la transacción actual complete.
 
-- **`LockModeType.READ`: sinónimo de `OPTIMISTIC`. Poco usado en la práctica.
+- **`LockModeType.READ`: sinónimo de `OPTIMISTIC`, aunque se utiliza raramente en la práctica.
 
-- **`LockModeType.WRITE`: sinónimo de `OPTIMISTIC_FORCE_INCREMENT`. Poco usado en la práctica.
+- **`LockModeType.WRITE`: sinónimo de `OPTIMISTIC_FORCE_INCREMENT` también poco utilizado en la práctica.
 
-Los **bloqueos pesimistas** pueden afectar el rendimiento de la base de datos, ya que impiden que otras transacciones accedan a los datos bloqueados.
+Es importante considerar que los **bloqueos pesimistas** pueden afectar el rendimiento de la base de datos, ya que impiden que otras transacciones accedan a los datos bloqueados.
 
-Los **bloqueos optimistas** son más apropiados para sistemas con alta concurrencia, ya que permiten una mayor escalabilidad al no bloquear los datos de manera exclusiva.
+En cambio, los **bloqueos optimistas** son más adecuados para sistemas con alta concurrencia, ya que permiten una mayor escalabilidad al no bloquear los datos de manera exclusiva.
 
-- [Javadoc](https://docs.spring.io/spring-data/jpa/docs/current/api/org/springframework/data/jpa/repository/Lock.html)
+- [Javadoc - @Lock](https://docs.spring.io/spring-data/jpa/docs/current/api/org/springframework/data/jpa/repository/Lock.html)
 
-- [Javadoc](https://jakarta.ee/specifications/persistence/2.2/apidocs/javax/persistence/lockmodetype)
+- [Javadoc - LockModeType](https://jakarta.ee/specifications/persistence/2.2/apidocs/javax/persistence/lockmodetype)
 
-- [Enabling Transaction Locks in Spring Data JPA](https://www.baeldung.com/java-jpa-transaction-locks)
+- [Enabling Transaction Locks in Spring Data JPA - Baeldung](https://www.baeldung.com/java-jpa-transaction-locks)
 
-- [Locking](https://docs.spring.io/spring-data/jpa/reference/jpa/locking.htm)
+- [Locking - Spring Data](https://docs.spring.io/spring-data/jpa/reference/jpa/locking.htm)
 
 #### @Modifying
 
-Se pueden modificar datos con un método de repositorio si se anota con `@Modifying`:
+La anotación `@Modifying` se utiliza en Spring Data JPA para indicar que un método de repositorio modifica datos en la base de datos. Específicamente, se emplea en combinación con la anotación @Query cuando la consulta realiza operaciones de modificación como UPDATE, DELETE o INSERT.
+
+Por ejemplo, se puede modificar el nombre de una persona en la base de datos con un método de repositorio anotado con `@Modifying`:
 
 ```java
 @Modifying
@@ -2078,13 +2257,17 @@ Se pueden modificar datos con un método de repositorio si se anota con `@Modify
 void changeName(@Param("id") long id, @Param("name") String name);
 ```
 
-- [Spring Data JPA @Query](https://www.baeldung.com/spring-data-jpa-query)
+Es importante destacar que, al usar `@Modifying`, es recomendable también gestionar las transacciones para asegurarse de que los cambios se persistan correctamente. Si el método no está en una transacción activa, Spring iniciará una automáticamente.
+
+- [Javadoc - @Modifying](https://docs.spring.io/spring-data/jpa/docs/current/api/org/springframework/data/jpa/repository/Modifying.html)
+
+- [Spring Data JPA @Query - Baeldung](https://www.baeldung.com/spring-data-jpa-query)
 
 #### @EnableJpaRepositories
 
 Para utilizar repositorios JPA, se le tiene que indicar a Spring mediante la anotación `@EnableJpaRepositories`.
 
-Hay que tener en cuenta que se debe usar esta anotación con la anotación `@Configuration`:
+Hay que tener en cuenta que esta anotación se debe usar con la anotación `@Configuration`:
 
 ```java
 @Configuration
@@ -2100,64 +2283,119 @@ Spring buscará repositorios en los subpaquetes de esta clase `@Configuration`. 
 class PersistenceJPAConfig {}
 ```
 
-También hay que tener en cuenta que Spring Boot hace esto automáticamente si encuentra **Spring Data JPA en el classpath**.
+En aplicaciones Spring Boot no es necesario usar esta anotación explícitamente, ya que Spring Boot lo configura **automáticamente** si detecta la dependencia de Spring Data JPA en el classpath.
+
+Sin embargo, en configuraciones avanzadas, como cuando se trabaja con múltiples fuentes de datos o configuraciones de repositorios personalizados, puede ser necesario.
+
+- [Javadoc - @EnableJpaRepositories](https://docs.spring.io/spring-data/jpa/docs/current/api/org/springframework/data/jpa/repository/config/EnableJpaRepositories.html)
 
 ### Spring Data Mongo Annotations
 
-Spring Data hace que trabajar con MongoDB sea mucho más fácil.
+- [Javadoc - Spring Data MongoDB](https://docs.spring.io/spring-data/mongodb/docs/current/api/)
 
-- [Introduction to Spring Data MongoDB](https://www.baeldung.com/spring-data-mongodb-tutorial)
+- [Introduction to Spring Data MongoDB - Baeldung](https://www.baeldung.com/spring-data-mongodb-tutorial)
 
 #### @Document
 
-Esta anotación marca una clase como un objeto de dominio que queremos conservar en la base de datos:
+La anotación `@Document` marca una clase como un objeto de dominio que queremos conservar en una base de datos MongoDB:
 
 ```java
-@Document
-class User {}
-```
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
-También nos permite elegir el nombre de la colección que queremos utilizar:
-
-```java
 @Document(collection = "user")
-class User {}
+class User {
+
+    @Id
+    private String id;
+
+    @Field("username")
+    private String name;
+
+    // Getters and setters...
+}
 ```
 
-Esta anotación `@Document` es el equivalente en Mongo de `@Entity` en JPA.
+Esta anotación también nos permite elegir el nombre de la colección que queremos utilizar a través del atributo `collection`.
+
+Esta anotación `@Document` es el equivalente en MongoDB de `@Entity` en JPA. Al igual que `@Entity`, se utiliza junto con otras anotaciones como `@Id` para definir el campo que actúa como clave primaria, y `@Field` para mapear campos de la clase a nombres específicos en la colección.
+
+- [Javadoc - @Document](https://docs.spring.io/spring-data/mongodb/docs/current/api/org/springframework/data/mongodb/core/mapping/Document.html)
 
 #### @Field
 
 Con la anotación `@Field`, podemos configurar el nombre de un campo que queremos usar cuando MongoDB persiste el documento:
 
+La anotación `@Field` en Spring Data MongoDB se utiliza para especificar el nombre de un campo en la base de datos que es diferente del nombre del campo en la clase Java. Esto es útil cuando se necesita que los nombres de los campos en MongoDB sigan una convención diferente a la de las propiedades en el código Java:
+
 ```java
-@Document
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+
+@Document(collection = "user")
 class User {
 
-    // ...
-
     @Field("email")
-    String emailAddress;
+    private String emailAddress;
 
-    // ...
+    @Field("first_name")
+    private String firstName;
 
+    @Field("last_name")
+    private String lastName;
+
+    // Getters and setters...
 }
 ```
 
-Esta anotación `@Field` es el equivalente en Mongo de `@Column` en JPA.
+Este ejemplo muestra cómo el campo `emailAddress` en Java se mapea al campo `email` en la colección MongoDB.
+
+La anotación `@Field` es el equivalente en MongoDB de `@Column` en JPA. Al igual que `@Column`, se utiliza para mapear un nombre de campo en el código a un nombre específico en la base de datos.
+
+Destacar que `@Field` es opcional si el nombre del campo en Java es el mismo que en MongoDB. Se usa principalmente cuando se necesita una diferenciación en los nombres.
+
+- [Javadoc - @Field](https://docs.spring.io/spring-data/mongodb/docs/current/api/org/springframework/data/mongodb/core/mapping/Field.html)
 
 #### @Query
 
-Con la anotación `@Query`, podemos proporcionar una consulta de buscador en un método de repositorio de MongoDB:
+La anotación `@Query` en Spring Data MongoDB se utiliza para definir consultas personalizadas directamente en los métodos del repositorio. Esto es útil cuando necesitas realizar consultas que no pueden expresarse fácilmente con los métodos de consulta derivada proporcionados por Spring Data.
 
 ```java
-@Query("{ 'name' : ?0 }")
-List<User> findUsersByName(String name);
+import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
+import java.util.List;
+
+public interface UserRepository extends MongoRepository<User, String> {
+
+    @Query("{ 'name' : ?0 }")
+    List<User> findUsersByName(String name);
+
+    @Query("{ 'age' : { $gt: ?0, $lt: ?1 } }")
+    List<User> findUsersByAgeRange(int ageStart, int ageEnd);
+}
 ```
+
+En este ejemplo, la consulta `@Query("{ 'name' : ?0 }")` busca documentos en la colección donde el campo `name` coincide con el valor proporcionado por el parámetro `name` del método.
+
+La consulta se define en formato JSON de MongoDB. El placeholder `?0` se refiere al primer argumento del método (en este caso, `String name`).
+
+Puedes crear consultas más complejas utilizando operadores MongoDB. Por ejemplo, la siguiente consulta busca usuarios cuya edad está entre dos valores:
+
+```java
+@Query("{ 'age' : { $gt: ?0, $lt: ?1 } }")
+List<User> findUsersByAgeRange(int ageStart, int ageEnd);
+```
+
+También es posible definir proyecciones para seleccionar solo ciertos campos de los documentos, optimizando así las operaciones de lectura.
+
+- [Javadoc - @Query](https://docs.spring.io/spring-data/mongodb/docs/current/api/org/springframework/data/mongodb/repository/Query.html)
 
 #### @EnableMongoRepositories
 
-Para utilizar repositorios de MongoDB, tenemos que indicárselo a Spring. Podemos hacer esto con `@EnableMongoRepositories`. Esta anotación se tiene que utilizar con la anotación `@Configuration`:
+La anotación `@EnableMongoRepositories` en Spring Data MongoDB se utiliza para habilitar la creación de repositorios basados en MongoDB. Esta anotación indica a Spring que busque interfaces de repositorio y las implemente automáticamente.
+
+Para usar esta anotación, debes aplicarla a una clase de configuración marcada con `@Configuration`. Spring buscará las interfaces de repositorio en los subpaquetes de la clase configurada:
 
 ```java
 @Configuration
@@ -2165,7 +2403,7 @@ Para utilizar repositorios de MongoDB, tenemos que indicárselo a Spring. Podemo
 class MongoConfig {}
 ```
 
-Spring buscará repositorios en los subpaquetes de esta clase `@Configuration`. Podemos alterar este comportamiento con el argumento `basePackages`:
+Por defecto, Spring escaneará todos los subpaquetes del paquete en el que se encuentra esta clase `@Configuration`. Si deseas especificar un paquete concreto donde Spring debería buscar los repositorios, puedes utilizar el argumento `basePackages`:
 
 ```java
 @Configuration
@@ -2173,11 +2411,21 @@ Spring buscará repositorios en los subpaquetes de esta clase `@Configuration`. 
 class MongoConfig {}
 ```
 
-Spring Boot hace esto automáticamente si encuentra **Spring Data MongoDB en el classpath**, es decir, si se ha incluido como dependencia.
+Alternativamente, puedes usar `basePackageClasses` para especificar clases de un paquete, lo que también guiará a Spring a escanear los repositorios en esos paquetes:
 
-## [Spring Bean Annotations](https://www.baeldung.com/spring-bean-annotations)
+```java
+@Configuration
+@EnableMongoRepositories(basePackageClasses = MyRepository.class)
+class MongoConfig {}
+```
 
-El contenedor de Spring se encarga de crear los beans en la aplicación y de coordinar las relaciones entre estos objetos a través de la DI.
+En aplicaciones Spring Boot, esta anotación no es necesaria explícitamente. Spring Boot configurará automáticamente los repositorios si detecta que Spring Data MongoDB está presente en el classpath, es decir, si se ha incluido como dependencia en el proyecto.
+
+- [Javadoc - @EnableMongoRepositories](https://docs.spring.io/spring-data/mongodb/docs/current/api/org/springframework/data/mongodb/repository/config/EnableMongoRepositories.html)
+
+## Spring Bean Annotations
+
+El contenedor de Spring se encarga de crear los beans en la aplicación y de coordinar las relaciones entre estos objetos a través de la inyección de dependencias o DI.
 
 A la hora de expresar una especificación de conexión de bean, Spring ofrece tres mecanismos principales:
 
@@ -2190,6 +2438,8 @@ A la hora de expresar una especificación de conexión de bean, Spring ofrece tr
 Todos los mecanismos son compatibles entre sí y no excluyentes, es decir, dos mecanismos pueden ser utilizados en la misma aplicación.
 
 La recomendación es usar la **conexión automática** ya que requiere menos configuración explícita y además usar la **configuración explícita** en el caso de usar librerías y frameworks de terceros para conectar sus componentes porque en estos casos **no se dispone de acceso al código fuente** para anotar las clases con `@Component` o `@Service` o cualquier otra.
+
+- [Spring Bean Annotations - Baeldung](https://www.baeldung.com/spring-bean-annotations)
 
 ### @ComponentScan
 
