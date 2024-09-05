@@ -1498,7 +1498,7 @@ public class VehicleFactoryApplication {
 }
 ```
 
-Esta anotación es una **meta-anotación** de las anotaciones `@Configuration`, `@EnableAutoConfiguration` y `@ComponentScan` con sus atributos predeterminados.
+Esta anotación es una **meta-anotación** de las anotaciones `@SpringBootConfiguration` (**meta-anotación** de `@Configuration`), `@EnableAutoConfiguration` y `@ComponentScan` con sus atributos predeterminados.
 
 - La anotación [`@Configuration`](#configuration) marca la clase como una **clase de configuración** de Spring. Esto indica que la clase puede contener métodos anotados con `@Bean`, los cuales definen los beans del contexto de aplicación de Spring.
 
@@ -2433,7 +2433,7 @@ A la hora de expresar una especificación de conexión de bean, Spring ofrece tr
 
 - **Configuración explícita en Java (JavaConfig)**: los _beans_ se declaran usando la anotación `@Bean` en una clase de configuración anotada con `@Configuration`.
 
-- **Análisis y detección implícita de beans y conexión automática de beans**: finalmente, podemos marcar la clase como componentes gestionados por el contenedor de Spring con una de las anotaciones del paquete [org.springframework.stereotype](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/stereotype/package-summary.html) y dejar el trabajo para el escaneo de componentes mediante `@ComponentScan`.
+- **Análisis y detección implícita de beans y conexión automática de beans**: finalmente, podemos marcar la clase como componentes gestionados por el contenedor de Spring con una de las anotaciones del paquete [_'org.springframework.stereotype'_](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/stereotype/package-summary.html) y dejar el trabajo para el escaneo de componentes mediante `@ComponentScan`.
 
 Todos los mecanismos son compatibles entre sí y no excluyentes, es decir, dos mecanismos pueden ser utilizados en la misma aplicación.
 
@@ -2445,9 +2445,9 @@ La recomendación es usar la **conexión automática** ya que requiere menos con
 
 Spring puede **escanear automáticamente** un paquete en busca de _beans_ si el [escaneo de componentes está habilitado](#enableautoconfiguration).
 
-Esta anotación `@ComponentScan` se utiliza junto a la anotación [`@Configuration`](#configuration).
+La anotación `@ComponentScan` se utiliza junto a la anotación [`@Configuration`](#configuration) para especificarle a Spring qué paquetes debe escanear en busca de componentes anotados con `@Component`, `@Service`, `@Repository`, entre otros. Esta anotación configura los paquetes base que deben ser escaneados.
 
-La anotación `@ComponentScan` configura qué paquetes escanear en busca de _beans_. Podemos especificar los nombres de los **paquetes** base directamente con uno de los argumentos "_basePackages_" o _"value"_ (alias para _"basePackages"_):
+Podemos especificar los nombres de los paquetes base directamente con los argumentos `basePackages` (o su alias `value`):
 
 ```java
 @Configuration
@@ -2455,7 +2455,7 @@ La anotación `@ComponentScan` configura qué paquetes escanear en busca de _bea
 class VehicleFactoryConfig {}
 ```
 
-Además, podemos indicar **clases** en los paquetes base con el argumento _"basePackageClasses"_, lo que mejora la seguridad de tipos. Este método proporciona una ventaja ya que en el caso de refactorizar nombres de clases, no habrá incosistencias, mientras que si se usa una cadena como "com.example.myapplication", apuntará a clases que han cambiado de nobmre:
+Además, podemos indicar **clases** en los paquetes base con el argumento `basePackageClasses`, que proporciona seguridad de tipos. Esta forma es útil para evitar inconsistencias durante la refactorización de nombres de paquetes o clases:
 
 ```java
 @Configuration
@@ -2463,7 +2463,7 @@ Además, podemos indicar **clases** en los paquetes base con el argumento _"base
 class VehicleFactoryConfig {}
 ```
 
-Ambos argumentos son matrices, por lo que podemos proporcionar varios paquetes o clases para cada uno.
+Ambos argumentos son matrices, por lo que podemos proporcionar varios paquetes o clases para escanear:
 
 ```java
 @Configuration
@@ -2471,9 +2471,18 @@ Ambos argumentos son matrices, por lo que podemos proporcionar varios paquetes o
 class VehicleFactoryConfig {}
 ```
 
-Si no se especifica ningún argumento, el escaneo se realiza desde el mismo paquete donde está presente la clase anotada con `@ComponentScan`. Generalmente se recomienda que se ubique la clase de aplicación principal en un paquete raíz encima de otras clases. Normalmente, la clase anotada con `@SpringBootApplication` se considera la clase principal.
+Si no se especifica ningún argumento, Spring escaneará automáticamente el mismo paquete donde está presente la clase anotada con `@ComponentScan`. Se recomienda que la clase de configuración o la clase principal de la aplicación esté en un paquete raíz para que todos los subpaquetes se incluyan en el escaneo.
 
-En este ejemplo, la clase principal se ubica en _"com.example.myapplication"_ por lo que ese se considera el paquete raíz. Si no se indica un paquete base en `@ComponentScan` se utilizará ese paquete raíz como base. Por tanto el escaneo se hará a partir de ese paquete e incluirá _"com.example.myapplication.customer"_, _"com.example.myapplication.order"_, etcétera...:
+Esto es común en aplicaciones Spring Boot, donde la clase principal anotada con `@SpringBootApplication` actúa como punto de partida para el escaneo. La anotación [`@SpringBootApplication`](#springbootapplication) es una meta-anotación, que incluye, entre otras, la anotación `@ComponentScan` por lo que el escaneo se hace automáticamente:
+
+```java
+package com.example.myapplication;
+
+@SpringBootApplication
+public class MyApplication { ... }
+```
+
+En este caso, Spring escaneará todos los subpaquetes, como _'com.example.myapplication.customer'_ o _'com.example.myapplication.order'_.
 
 ```txt
 com
@@ -2494,7 +2503,7 @@ com
              +- OrderRepository.java
 ```
 
-La anotación `@ComponentScan` aprovecha la función de anotaciones repetidas de Java 8, lo que significa que podemos marcar una clase con ella varias veces:
+En Java 8, gracias a las anotaciones repetidas, se pueden utilizar varias anotaciones `@ComponentScan` en una clase de configuración, lo que permite especificar varias configuraciones de escaneo:
 
 ```java
 @Configuration
@@ -2503,7 +2512,7 @@ La anotación `@ComponentScan` aprovecha la función de anotaciones repetidas de
 class VehicleFactoryConfig {}
 ```
 
-Como alternativa, se puede usar la anotación `@ComponentScans` para especificar múltiples configuraciones de `@ComponentScan`:
+Alternativamente, se puede usar la anotación `@ComponentScans` para especificar múltiples configuraciones de `@ComponentScan`:
 
 ```java
 @Configuration
@@ -2514,26 +2523,41 @@ Como alternativa, se puede usar la anotación `@ComponentScans` para especificar
 class VehicleFactoryConfig {}
 ```
 
-- [Javadoc - `@ComponentScan`](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/ComponentScan.html)
+Spring también permite aplicar filtros para incluir o excluir determinados beans durante el escaneo. Esto se puede lograr con los atributos `includeFilters` y `excludeFilters`:
 
-- [Javadoc - `@ComponentScans`](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/ComponentScans.html)
+```java
+@ComponentScan(
+  basePackages = "com.baeldung.annotations",
+  includeFilters = @ComponentScan.Filter(MyCustomAnnotation.class),
+  excludeFilters = @ComponentScan.Filter(AnotherCustomAnnotation.class)
+)
+class VehicleFactoryConfig {}
+```
+
+- [Javadoc - @ComponentScan](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/ComponentScan.html)
+
+- [Javadoc - @ComponentScans](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/ComponentScans.html)
 
 - [Spring Component Scanning - Baeldung](https://www.baeldung.com/spring-component-scanning)
+
+- [Classpath Scanning and Managed Components - Spring Framework](https://docs.spring.io/spring-framework/reference/core/beans/classpath-scanning.html)
 
 - [Structuring Your Code - Spring Boot](https://docs.spring.io/spring-boot/reference/using/structuring-your-code.html)
 
 ### @Component
 
-La anotación `@Component` es una anotación de **nivel de clase**. Durante el [análisis de componentes con `@ComponentScan`](#componentscan), Spring Framework detecta automáticamente las clases anotadas con `@Component`:
+La anotación `@Component` es una anotación a **nivel de clase** en Spring que marca una clase como un _bean_ gestionado por el contenedor de Spring. Durante el [análisis de componentes con `@ComponentScan`](#componentscan), Spring Framework detecta automáticamente las clases anotadas con `@Component` y las registra en el contexto de aplicación como _beans_:
 
 ```java
+import org.springframework.stereotype.Component;
+
 @Component
 class CarUtility {
     // ...
 }
 ```
 
-De forma predeterminada, las instancias de _bean_ de esta clase tienen **el mismo nombre que el nombre de la clase** con una inicial en minúscula. Además, podemos especificar un nombre diferente utilizando el argumento _"value"_ opcional de esta anotación.
+De forma predeterminada, el nombre del _bean_ registrado será el mismo que el nombre de la clase, pero con la inicial en minúscula (`carUtility` en este caso). Sin embargo, podemos especificar un nombre personalizado para el _bean_ utilizando el argumento `value` opcional:
 
 ```java
 import org.springframework.stereotype.Component;
@@ -2546,7 +2570,7 @@ public class MyService {
 }
 ```
 
-Otra forma de asignar nombres a un _bean_ implica descartar la anotación `@Component` y, en su lugar, usar la anotación `@Named` de la especificación de inyección de dependencias de Java **JSR-330** para proporcionar un nombre al _bean_:
+Otra forma de asignar nombres a un _bean_ es utilizando la anotación `@Named` de la **especificación de inyección de dependencias de Java JSR-330**. Esta anotación es equivalente a `@Component`, pero es parte de un estándar de inyección de dependencias más amplio:
 
 ```java
 import javax.inject.Named;
@@ -2559,15 +2583,25 @@ public class MyService {
 }
 ```
 
-Dado que `@Repository`, `@Service`, `@Configuration` y `@Controller` son **metanotaciones** de `@Component`, comparten el mismo comportamiento de denominación de _beans_. Spring también los detecta automáticamente durante el proceso de escaneo de componentes.
+Anotaciones como `@Repository`, `@Service`, `@Controller` y `@Configuration` son **meta-anotaciones** de `@Component`, lo que significa que heredan el comportamiento de `@Component`. Además de marcar clases como _beans_, estas anotaciones proporcionan una semántica más específica sobre el propósito del _bean_:
 
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/stereotype/Component.html)
+- [`@Repository`](#repository) ➔ Usada para clases que interactúan directamente con la base de datos. Ofrece funcionalidades adicionales, como la conversión automática de excepciones de persistencia.
+
+- [`@Service`](#service) ➔ Indica que una clase contiene lógica de negocio. Aunque funcionalmente igual a `@Component`, su uso mejora la claridad semántica en el código.
+
+- [`@Controller`](#controller) ➔ Se utiliza para clases que gestionan solicitudes HTTP en aplicaciones web. Además de registrarlas como _beans_, Spring las trata como controladores de peticiones.
+
+- [`@Configuration`](#configuration) ➔ Indica que la clase proporciona métodos de configuración que producen _beans_.
+
+Estas anotaciones también permiten a Spring aplicar comportamientos específicos. Por ejemplo, `@Repository` está asociada con la traducción de excepciones de bases de datos en Spring, mientras que `@Service` no tiene ese comportamiento por defecto.
+
+- [Javadoc - @Component](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/stereotype/Component.html)
 
 - [Using JSR 330 Standard Annotations - Spring Framework](https://docs.spring.io/spring-framework/reference/core/beans/standard-annotations.html)
 
 ### @Repository
 
-Las clases DAO o _Repository_ generalmente representan la capa de acceso a la base de datos en una aplicación y deben anotarse con `@Repository`:
+Las clases DAO o _Repository_ representan la capa de acceso a la base de datos en una aplicación y deben anotarse con `@Repository`:
 
 ```java
 @Repository
@@ -2576,11 +2610,11 @@ class VehicleRepository {
 }
 ```
 
-Una ventaja de utilizar esta anotación es que tiene habilitada la **traducción automática de excepciones de persistencia**.
+Una de las ventajas clave de utilizar la anotación `@Repository` es que habilita la **traducción automática de excepciones de persistencia**. Esto significa que cualquier excepción lanzada por el proveedor de persistencia, como Hibernate o JPA, será capturada y traducida automáticamente por Spring en una subclase de `DataAccessException`, que es una excepción más general y manejable.
 
-Cuando se utiliza un marco de persistencia, como Hibernate, las excepciones nativas lanzadas dentro de las clases anotadas con `@Repository` se traducirán automáticamente a subclases de `DataAccessExeption` de Spring.
+Por ejemplo, si Hibernate lanza una `ConstraintViolationException`, Spring la traducirá en una `DataIntegrityViolationException`, lo que facilita el manejo coherente de errores en la capa de acceso a datos.
 
-Para habilitar la traducción de excepciones, necesitamos declarar nuestro propio bean _"PersistenceExceptionTranslationPostProcessor"_:
+Para asegurarse de que Spring traduzca automáticamente estas excepciones, es posible declarar explícitamente un bean de tipo `PersistenceExceptionTranslationPostProcessor`, aunque en la mayoría de los casos, Spring lo configura automáticamente.
 
 ```java
 @Bean
@@ -2589,13 +2623,15 @@ public PersistenceExceptionTranslationPostProcessor exceptionTranslation() {
 }
 ```
 
-Tenga en cuenta que en la mayoría de los casos, Spring realiza el paso anterior automáticamente.
+Este _bean_ permite que las excepciones nativas lanzadas dentro de las clases anotadas con `@Repository` se traduzcan correctamente a subclases de `DataAccessException`.
 
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/stereotype/Repository.html)
+En aplicaciones basadas en Spring Boot, esta funcionalidad suele estar habilitada automáticamente si se utiliza un marco de persistencia como JPA o Hibernate, sin necesidad de declarar explícitamente el bean `PersistenceExceptionTranslationPostProcessor`.
+
+- [Javadoc - @Repository](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/stereotype/Repository.html)
 
 ### @Service
 
-La **lógica de negocio** de una aplicación normalmente reside dentro de **la capa de servicio**, por lo que usaremos la anotación `@Service` para indicar que una clase pertenece a esa capa:
+La **lógica de negocio** de una aplicación normalmente reside dentro de la **capa de servicio**, por lo que usamos la anotación `@Service` para indicar que una clase pertenece a esa capa:
 
 ```java
 @Service
@@ -2604,46 +2640,78 @@ public class VehicleService {
 }
 ```
 
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/stereotype/Service.html)
+La anotación `@Service` es una especialización de `@Component`, por lo que las clases anotadas con `@Service` son detectadas automáticamente por el escaneo de componentes de Spring. Esto permite que Spring las registre como _beans_ y las gestione dentro del contenedor de aplicación.
+
+A diferencia de `@Component`, que es una anotación genérica para cualquier componente de Spring, `@Service` se utiliza para marcar **servicios que contienen la lógica de negocio**.
+
+Aunque `@Service` no tiene un efecto funcional adicional en comparación con `@Component`, su uso mejora la claridad y semántica del código al indicar que la clase realiza tareas relacionadas con la lógica de negocio.
+
+- [Javadoc - @Service](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/stereotype/Service.html)
 
 ### @Controller
 
-La anotación `@Controller` es una anotación a **nivel de clase**, que le dice a Spring Framework que esta clase sirve como controlador en Spring MVC:
+La anotación `@Controller` es una anotación a **nivel de clase** que le indica a Spring Framework que esta clase sirve como un controlador en el contexto de Spring MVC:
 
 ```java
 @Controller
 public class VehicleController {
-    // ...
+
+    @GetMapping("/vehicles")
+    public String listVehicles(Model model) {
+        List<Vehicle> vehicles = vehicleService.findAll();
+        model.addAttribute("vehicles", vehicles);
+        return "vehicleList"; // nombre de la vista (ej. un archivo Thymeleaf o JSP)
+    }
 }
 ```
 
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/stereotype/Controller.html)
+En este ejemplo, el método `listVehicles` maneja las solicitudes GET a la ruta </vehicles>, obtiene una lista de vehículos del servicio y los añade al modelo. Luego, retorna el nombre de la vista que se debe renderizar.
+
+La anotación `@Controller` es parte del framework Spring MVC y se utiliza para manejar solicitudes web. Las clases anotadas con `@Controller` contienen métodos que gestionan las solicitudes HTTP y retornan vistas o datos.
+
+Los métodos en una clase anotada con `@Controller` están destinados a manejar **solicitudes web**. Estos métodos suelen estar anotados con `@RequestMapping`, `@GetMapping`, `@PostMapping`, etc., para mapear las solicitudes a métodos específicos.
+
+Las clases `@Controller` a menudo trabajan con modelos (`@ModelAttribute`) y vistas (_"ModelAndView"_). En una arquitectura MVC (Modelo-Vista-Controlador), `@Controller` se encarga de preparar datos del modelo y decidir qué vista debe ser renderizada.
+
+Aunque `@Controller` se usa en aplicaciones Spring MVC, en aplicaciones Spring Boot, que suelen retornar JSON o XML, es común usar [`@RestController`](#restcontroller), que combina `@Controller` y `@ResponseBody`.
+
+- [Javadoc - @Controller](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/stereotype/Controller.html)
 
 ### @Configuration
 
-Las clases de configuración contienen **métodos de definición de _beans_** anotados con `@Bean`:
+La anotación `@Configuration` se utiliza para definir clases que contienen métodos de configuración de _beans_ en Spring. Estas clases son utilizadas para crear y configurar _beans_ dentro del contexto de la aplicación.
+
+Las clases anotadas con `@Configuration` pueden contener métodos anotados con `@Bean`. Estos métodos se encargan de instanciar, configurar y devolver los objetos que se registrarán como _beans_ en el contexto de la aplicación.
 
 ```java
 @Configuration
-class VehicleFactoryConfig {
+public class AppConfig {
 
     @Bean
-    Engine engine() {
+    public Engine engine() {
         return new Engine();
     }
 
+    @Bean
+    public Vehicle vehicle() {
+        return new Vehicle(engine());
+    }
 }
 ```
 
-Esta anotación `@Configuration` es una **meta-anotación** o especialización de `@Component` que se utiliza para definir una clase de configuración en Spring. Las clases anotadas con `@Configuration` son utilizadas para definir _beans_ en el contexto de la aplicación y además, son consideradas en sí mismas como _beans_.
+En este ejemplo, la clase `AppConfig` define dos _beans_: `engine` y `vehicle`. El _bean_ `vehicle` depende del _bean_ `engine`, y Spring se encargará de la inyección de dependencias cuando se cree una instancia de `Vehicle`.
 
-- [Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Configuration.html)
+Esta anotación `@Configuration` es una **meta-anotación** o especialización de `@Component`, lo que significa que también se considera un componente de Spring y, por lo tanto, puede ser detectada automáticamente durante el escaneo de componentes si se usa `@ComponentScan` o `@SpringBootApplication`.
+
+Las clases `@Configuration` pueden ser utilizadas para definir varias configuraciones dentro de una aplicación. Es común usar esta anotación para definir configuraciones específicas de diferentes módulos o áreas de la aplicación.
+
+- [Javadoc - @Configuration](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Configuration.html)
 
 - [Basic Concepts: @Bean and @Configuration - Spring Framework](https://docs.spring.io/spring-framework/reference/core/beans/java/basic-concepts.html)
 
 - [Using the @Configuration annotation - Spring Framework](https://docs.spring.io/spring-framework/reference/core/beans/java/configuration-annotation.html)
 
-## [Spring AOP](https://docs.spring.io/spring-framework/reference/core/aop.html)
+## Spring AOP
 
 La **Programación Orientada a Aspectos (AOP)** es un paradigma de programación que se enfoca en separar las preocupaciones transversales del núcleo de la lógica del negocio.
 
@@ -2652,6 +2720,8 @@ Una preocupación transversal pueden definirse como cualquier funcionalidad que 
 La AOP es muy útil para **modularizar estas funcionalidades que se repiten** en diferentes partes de la aplicación y desacoplar estas preocupaciones de la lógica de negocio.
 
 - [Aspect Oriented Programming with Spring - Spring Framework](https://docs.spring.io/spring-framework/reference/core/aop.html)
+
+- [Spring AOP - Baeldung](https://docs.spring.io/spring-framework/reference/core/aop.html)
 
 - [Introduction to Spring AOP - Baeldung](https://www.baeldung.com/spring-aop)
 
