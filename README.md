@@ -2715,9 +2715,9 @@ Las clases `@Configuration` pueden ser utilizadas para definir varias configurac
 
 La **Programación Orientada a Aspectos (AOP)** es un paradigma de programación que se enfoca en separar las preocupaciones transversales del núcleo de la lógica del negocio.
 
-Una preocupación transversal pueden definirse como cualquier funcionalidad que afecta a varios puntos de una aplicación, como los inicios de sesión, la gestión de transacciones, el registro (logging), la seguridad, y el manejo de excepciones.
+Una preocupación transversal pueden definirse como cualquier **funcionalidad que afecta a varios puntos de una aplicación**, como los inicios de sesión, la gestión de transacciones, el registro (logging), la seguridad, y el manejo de excepciones.
 
-La AOP es muy útil para **modularizar estas funcionalidades que se repiten** en diferentes partes de la aplicación y desacoplar estas preocupaciones de la lógica de negocio.
+La AOP es muy útil para modularizar estas funcionalidades que se repiten en diferentes partes de la aplicación y desacoplar estas preocupaciones de la lógica de negocio.
 
 - [Aspect Oriented Programming with Spring - Spring Framework](https://docs.spring.io/spring-framework/reference/core/aop.html)
 
@@ -2727,15 +2727,13 @@ La AOP es muy útil para **modularizar estas funcionalidades que se repiten** en
 
 ### Conceptos de AOP
 
-- **Aspecto (Aspect)**
+- **Aspecto (_Aspect_)**
 
-  Un aspecto es un módulo que encapsula una preocupación transversal. En términos simples, es **una clase que contiene la lógica** para una funcionalidad transversal, como el registro de auditoría o la seguridad.
+  Un aspecto es un módulo que encapsula una **preocupación transversal**. En términos simples, es **una clase que contiene la lógica** para una funcionalidad transversal, como el registro de auditoría, la seguridad o el manejo de transacciones.
 
-- **Consejo (Advice)**
+- **Consejo (_Advice_)**
 
-  Un _advice_ es **la acción que un aspecto realiza en un punto específico** en el programa. Es el código que se ejecuta cuando se encuentra un punto de unión.
-  
-  Además de describir el trabajo que un aspecto debe llevar a cabo, los _advice_ deben responder a la pregunta de **cúando deben llevar a cabo este trabajo**. Los tipos comunes de _advice_ son:
+  Un _advice_ es **la acción que un aspecto realiza en un punto específico** en el programa. Es el código que se ejecuta cuando se encuentra un punto de unión. Define lo que se debe hacer y cuándo debe hacerse. Los tipos comunes de _advice_ son:
 
   - **`Before`**: Se ejecuta antes de que el método objetivo sea llamado.
 
@@ -2745,41 +2743,45 @@ La AOP es muy útil para **modularizar estas funcionalidades que se repiten** en
 
   - **`After Throwing`**: Se ejecuta si el método objetivo lanza una excepción.
 
-  - **`Around`**: Envuelve la ejecución del método objetivo, permitiendo realizar acciones antes y después de que se llame al método.
+  - **`Around`**: Envuelve la ejecución del método objetivo, permitiendo realizar acciones antes y después de que se llame al método, y también puede controlar si se llama o no al método objetivo.
 
-- **Punto de Unión (Join Point)**
+- **Punto de Unión (_Join Point_)**
 
   Un punto de unión es **un punto en la ejecución del programa donde se podría aplicar el aspecto**, como la invocación de un método o la ejecución de un bloque de código. En Spring AOP, los puntos de unión son principalmente las invocaciones de métodos.
 
 - **Corte Transversal (Pointcut)**
 
-  Un pointcut es una **expresión que selecciona uno o más puntos de unión** donde un advice debería ejecutarse. Define el **lugar exacto  donde se aplica un aspecto** en el código. Por ejemplo, se puede definir un pointcut para todos los métodos en una clase específica o para métodos con un nombre particular.
+  Un pointcut es una **expresión que selecciona uno o más puntos de unión** donde un _advice_ debería ejecutarse. Define el **lugar exacto  donde se aplica un aspecto** en el código. Por ejemplo, se puede definir un _pointcut_ para todos los métodos en una clase específica o para métodos con un nombre particular.
 
 - **Objeto de Intercepción (Proxy)**
 
-  En AOP, un proxy es **un objeto creado en tiempo de ejecución que intercepta las llamadas** a los métodos de un objeto objetivo para aplicar el advice. Los proxies permiten que los aspectos se apliquen sin modificar el código original del objeto.
+  En AOP, un proxy es **un objeto creado en tiempo de ejecución que intercepta las llamadas** a los métodos de un objeto objetivo para aplicar el _advice_. Los proxies permiten que los aspectos se apliquen sin modificar el código original del objeto.
 
-- **Objetivo (Target Object)**
+- **Objetivo (_Target Object_)**
 
-  El _"target object"_ es el objeto cuyo método está siendo interceptado. Es el **objeto en el que se aplican los aspectos**.
+  El objetivo es el objeto cuyo método está siendo interceptado. Es el **objeto en el que se aplican los aspectos**.
+
+Estos términos no son específicos de Spring.  
+
+- [AOP Concepts - Spring Framework](https://docs.spring.io/spring-framework/reference/core/aop/introduction-defn.html)  
 
 ### Implementación de AOP en Spring
 
-**Spring AOP** es el framework de Spring para la programación orientada a aspectos. Utiliza **proxies dinámicos** para implementar la AOP en tiempo de ejecución y se integra perfectamente con otros componentes de Spring.
+**Spring AOP** es el framework de Spring para la programación orientada a aspectos. Utiliza **proxies dinámicos** para aplicar aspectos en tiempo de ejecución y se integra de manera efectiva con otros componentes de Spring. Spring AOP está implementado en Java puro.
 
-Spring AOP es una implementación de AOP más **simple y centrada** en las necesidades más comunes de los desarrolladores de aplicaciones empresariales.
+El enfoque de Spring AOP hacia AOP difiere del enfoque de la mayoría de otros frameworks de AOP. El objetivo no es proporcionar la implementación de AOP más completa si no más bien proporcionar una implementación de AOP más **simple y centrada** en las necesidades más comunes de los desarrolladores de aplicaciones empresariales.
 
-Algunos elementos clave de Spring AOP:
+Algunas características y elementos clave de Spring AOP son:
 
-- Spring AOP se puede usar con AspectJ. Este es un framework de AOP completo para Java que permite la programación orientada a aspectos. Ofrece más funcionalidades que Spring AOP.
+- Spring AOP se puede usar con **AspectJ**, un framework completo de AOP para Java que ofrece más funcionalidades avanzadas. AspectJ permite una programación orientada a aspectos más extensa, pero Spring AOP es suficiente para muchas necesidades de desarrollo.
 
-- Utiliza **proxies dinámicos** para aplicar aspectos en tiempo de ejecución. Esto significa que solo puede aplicar aspectos a los _beans_ de Spring y solo a métodos públicos.
+- Spring AOP utiliza **proxies dinámicos** para aplicar aspectos en tiempo de ejecución. Esto significa que puede aplicar aspectos solo a los _beans_ de Spring y únicamente a métodos públicos.
 
-- Se centra en aspectos que se aplican **antes, después o alrededor** de la ejecución de métodos.
+- Spring AOP se centra en aspectos que se aplican **antes, después o alrededor de la ejecución de métodos**. Esto cubre los casos de uso más comunes en aplicaciones empresariales.
 
-- Se pueden utilizar varias **anotaciones** para definir aspectos y _advice_, como `@Aspect`, `@Before`, `@After`, `@Around`, etc. Estas anotaciones son proporcionadas por AspectJ. Spring interpreta estas anotaciones con la ayuda de la biblioteca de AspectJ pero la implementación en tiempo de ejecución sigue siendo Spring AOP.
+- Spring AOP utiliza varias **anotaciones** para definir aspectos y _advice_, como `@Aspect`, `@Before`, `@After`, `@Around`, etc. Estas anotaciones son parte de AspectJ, pero Spring interpreta estas anotaciones utilizando su propia implementación de AOP.
 
-- Los aspectos pueden configurarse utilizando XML o la configuración basada en anotaciones.
+- Los aspectos en Spring AOP pueden configurarse utilizando XML o la configuración basada en anotaciones.
 
 Definición de un aspecto de ejemplo en **Spring AOP**:
 
@@ -2799,64 +2801,76 @@ public class LoggingAspect {
 }
 ```
 
-### [@AspectJ support](https://docs.spring.io/spring-framework/reference/core/aop/ataspectj.html)
+En este ejemplo, `LoggingAspect` es un aspecto que se aplica antes de la ejecución de cualquier método en la capa de servicio (`com.example.service`). El método `logBeforeMethod()` es el _advice_. La anotación `@Before` indica que el método `logBeforeMethod` debe ejecutarse antes de la ejecución de los métodos especificados por el _pointcut_.
 
-**@AspectJ** se refiere a un estilo de declaración de aspectos como clases Java normales anotadas con anotaciones. El estilo **@AspectJ** fue introducido por el proyecto AspectJ como parte de la versión AspectJ 5. Spring interpreta las mismas anotaciones que AspectJ 5, utilizando una biblioteca proporcionada por AspectJ para el análisis y coincidencia de pointcuts. Sin embargo, el tiempo de ejecución de AOP sigue siendo puramente Spring AOP, y no hay dependencia del compilador o tejedor de AspectJ.
+### @AspectJ support
 
-#### [Enabling @AspectJ Support](https://docs.spring.io/spring-framework/reference/core/aop/ataspectj/aspectj-support.html)
+**@AspectJ** se refiere a un estilo de declaración de aspectos utilizando clases Java normales anotadas con anotaciones específicas. Este estilo fue introducido por el proyecto AspectJ en la versión AspectJ 5.
+
+Spring interpreta las anotaciones de AspectJ, utilizando una biblioteca proporcionada por AspectJ para el análisis y coincidencia de _pointcuts_. Sin embargo, el tiempo de ejecución de AOP sigue siendo puramente Spring AOP, y no hay dependencia del compilador o tejedor de AspectJ.
+
+Esto significa que mientras que el estilo de definición de aspectos y los _pointcuts_ se basan en las anotaciones de AspectJ, la implementación en tiempo de ejecución y la aplicación de los aspectos se realizan a través de Spring AOP.
+
+Este enfoque permite que Spring use un estilo de declaración de aspectos más moderno y expresivo sin necesidad de integrar completamente el compilador AspectJ en el proceso de construcción de la aplicación.
+
+- [@AspectJ support - Spring Framework](https://docs.spring.io/spring-framework/reference/core/aop/ataspectj.html)
+
+#### Enabling @AspectJ Support
 
 Para activar el soporte de AspectJ con Java, agregue la anotación `@EnableAspectJAutoProxy`, como muestra el siguiente ejemplo:
 
+Para activar el soporte de AspectJ en una aplicación Spring, se debe agregar la anotación `@EnableAspectJAutoProxy` en una clase de configuración. Esta anotación habilita el uso de _proxies_ basados en AspectJ, permitiendo que los aspectos definidos se apliquen a los beans gestionados por Spring:
+
 ```java
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
+
 @Configuration
 @EnableAspectJAutoProxy
-    public class AppConfig {
+public class AppConfig {
+    // Puedes definir otros beans aquí si es necesario
 }
 ```
 
-#### [Declaring an Aspect](https://docs.spring.io/spring-framework/reference/core/aop/ataspectj/at-aspectj.html)
+La anotación `@Configuration` indica que la clase contiene definiciones de _beans_ y configuraciones de Spring, mientras que `@EnableAspectJAutoProxy` activa la capacidad de AOP utilizando _proxies_, facilitando la integración de aspectos en la aplicación.
 
-Con el soporte de @AspectJ habilitado, cualquier _bean_ definido en el contexto de aplicación con una clase que sea un aspecto @AspectJ (que tenga la anotación `@Aspect`) es automáticamente detectado por Spring y utilizado para configurar Spring AOP.
+- [Enabling @AspectJ Support - Spring Framework](https://docs.spring.io/spring-framework/reference/core/aop/ataspectj/aspectj-support.html)
 
-```java
-package com.xyz;
+#### Declaring an Aspect
 
-import org.aspectj.lang.annotation.Aspect;
-
-@Aspect
-public class NotVeryUsefulAspect {
-  // ...
-}
-```
-
-Los aspectos (clases anotadas con `@Aspect`) pueden tener métodos y campos, al igual que cualquier otra clase.
-
-Las clases de aspecto se pueden registrar como _beans_ normales mediante configuración XML de Spring, a través de métodos `@Bean` en clases `@Configuration`, o hacer que Spring las detecte automáticamente mediante el escaneo del classpath, de la misma manera que cualquier otro _bean_ administrado por Spring.
-
-Sin embargo, hay que tener en cuenta que la anotación `@Aspect` no es suficiente para la detección automática en el classpath. Para ese propósito, se necesita agregar una anotación `@Component` separada o, alternativamente, una anotación de estereotipo personalizada.
+Con el soporte de @AspectJ habilitado, cualquier _bean_ definido en el contexto de aplicación que sea una clase anotada con `@Aspect` es automáticamente detectado por Spring y utilizado para configurar Spring AOP. A continuación se muestra un ejemplo de cómo declarar un aspecto:
 
 ```java
-package com.xyz;
-
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
 
 @Aspect
 @Component
 public class NotVeryUsefulAspect {
-  // ...
+  // Métodos del aspecto se pueden definir aquí
 }
 ```
 
-#### [Declaring a Pointcut](https://docs.spring.io/spring-framework/reference/core/aop/ataspectj/pointcuts.html)
+Los aspectos, que son clases anotadas con `@Aspect`, pueden tener **métodos y campos**, al igual que cualquier otra clase en Java. Estos métodos pueden ser utilizados para definir el comportamiento del _advice_ en puntos de unión específicos.
 
-Los _pointcuts_ determinan los puntos de unión de interés y, por lo tanto, nos permiten controlar cuándo se ejecutan los consejos (advice). Spring AOP solo admite puntos de unión de ejecución de métodos para _beans_ de Spring.
+Las clases de aspecto se pueden registrar como _beans_ normales mediante configuración XML de Spring, a través de métodos `@Bean` en clases anotadas con `@Configuration`, o hacer que Spring las detecte automáticamente mediante el escaneo del _classpath_, de la misma manera que cualquier otro _bean_ administrado por Spring, siempre y cuando esté anotada con `@Component`, o cualquier otra anotación de estereotipo como `@Service`, etcétera..
 
-Una declaración de pointcut tiene dos partes: una firma que comprende un nombre y cualquier parámetro, y una expresión de pointcut que determina exactamente qué ejecuciones de métodos nos interesan.
+- [Declaring an Aspect - Spring Framework](https://docs.spring.io/spring-framework/reference/core/aop/ataspectj/at-aspectj.html)
 
-En el estilo de anotación @AspectJ de AOP, una firma de _pointcut_ se proporciona mediante una definición de un método (este método debe tener un tipo de retorno `void`), y la expresión de _pointcut_ se indica mediante el uso de la anotación `@Pointcut`:
+#### Declaring a Pointcut
+
+Los _pointcuts_ determinan los puntos de unión de interés y, por lo tanto, nos permiten controlar **cuándo se ejecutan los _advice_**. Spring AOP sólo admite puntos de unión de ejecución de métodos para _beans_ de Spring.
+
+Una declaración de _pointcut_ tiene dos partes: una firma que comprende un nombre y cualquier parámetro, y una expresión de _pointcut_ que determina exactamente qué ejecuciones de métodos nos interesan.
+
+En el estilo de anotación `@AspectJ` de AOP, una firma de _pointcut_ se proporciona mediante una definición de un método (este método debe tener un tipo de retorno `void`), y la expresión de _pointcut_ se indica mediante el uso de la anotación `@Pointcut`:
 
 ```java
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Pointcut;
+import org.aspectj.lang.annotation.Before;
+import org.aspectj.lang.annotation.After;
+
 @Aspect
 public class MyAspect {
 
@@ -2882,25 +2896,25 @@ public class MyAspect {
 
 Spring AOP soporta los siguientes **designadores de _pointcut_** de AspectJ (PCD) para su uso en expresiones:
 
-- **execution**: Para coincidir con puntos de unión de ejecución de métodos. Este es el principal designador de pointcut a utilizar cuando se trabaja con Spring AOP.
+- **execution**: Coincide con puntos de unión de ejecución de métodos. Este es el **designador principal** para trabajar con Spring AOP.
 
-- **within**: Limita la coincidencia a los puntos de unión dentro de ciertos tipos (la ejecución de un método declarado dentro de un tipo que coincide cuando usas Spring AOP).
+- **within**: Limita la coincidencia a los puntos de unión dentro de ciertos tipos.
 
-- **this**: Limita la coincidencia a los puntos de unión (la ejecución de métodos cuando usas Spring AOP) donde la referencia del bean (proxy de Spring AOP) es una instancia del tipo dado.
+- **this**: Limita la coincidencia a los puntos de unión donde la referencia del _bean_ es una instancia del tipo dado.
 
-- **target**: Limita la coincidencia a los puntos de unión (la ejecución de métodos cuando usas Spring AOP) donde el objeto objetivo (objeto de aplicación siendo proxy) es una instancia del tipo dado.
+- **target**: Limita la coincidencia a los puntos de unión donde el objeto objetivo es una instancia del tipo dado.
 
-- **args**: Limita la coincidencia a los puntos de unión (la ejecución de métodos cuando usas Spring AOP) donde los argumentos son instancias de los tipos dados.
+- **args**: Limita la coincidencia a los puntos de unión donde los argumentos son instancias de los tipos dados.
 
-- **@target**: Limita la coincidencia a los puntos de unión (la ejecución de métodos cuando usas Spring AOP) donde la clase del objeto que ejecuta tiene una anotación del tipo dado.
+- **@target**: Limita la coincidencia a los puntos de unión donde la clase del objeto que ejecuta tiene una anotación del tipo dado.
 
-- **@args**: Limita la coincidencia a los puntos de unión (la ejecución de métodos cuando usas Spring AOP) donde el tipo en tiempo de ejecución de los argumentos reales pasados tiene anotaciones de los tipos dados.
+- **@args**: Limita la coincidencia a los puntos de unión donde el tipo en tiempo de ejecución de los argumentos reales pasados tiene anotaciones de los tipos dados.
 
-- **@within**: Limita la coincidencia a los puntos de unión dentro de tipos que tienen la anotación dada (la ejecución de métodos declarados en tipos con la anotación dada cuando usas Spring AOP).
+- **@within**: Limita la coincidencia a los puntos de unión dentro de tipos que tienen la anotación dada.
 
-- **@annotation**: Limita la coincidencia a los puntos de unión donde el sujeto del punto de unión (el método que se ejecuta en Spring AOP) tiene la anotación dada.
+- **@annotation**: Limita la coincidencia a los puntos de unión donde el método que se ejecuta tiene la anotación dada.
 
-Spring AOP añade un designador de pointcut adicional llamado **bean** y que no forma parte del estándar PCD de AspectJ. Este PCD te permite limitar la coincidencia de puntos de unión a un _bean_ de Spring con un nombre específico o a un conjunto de _beans_ de Spring con nombres específicos (cuando usas comodines). El PCD **bean** tiene la siguiente forma:
+Spring AOP añade un designador de _pointcut_ adicional llamado **bean** y que no forma parte del estándar PCD de AspectJ. Este PCD te permite limitar la coincidencia de puntos de unión a un _bean_ de Spring con un nombre específico o a un conjunto de _beans_ de Spring con nombres específicos (cuando usas comodines). El PCD **bean** tiene la siguiente forma:
 
 ```java
 @Aspect
@@ -2951,11 +2965,9 @@ public class Pointcuts {
 }
 ```
 
-Al trabajar con aplicaciones empresariales, los desarrolladores a menudo necesitan referirse a módulos de la aplicación y a conjuntos particulares de operaciones desde varios aspectos. La recomendación es definir una clase dedicada que capture **expresiones de _pointcut_ con nombre** comúnmente para este propósito. Tal clase puede parecerse al siguiente ejemplo de `CommonPointcuts`:
+En aplicaciones empresariales, a menudo necesitas referirte a módulos y conjuntos particulares de operaciones desde varios aspectos. La recomendación es definir una **clase dedicada** para capturar **expresiones de _pointcut_ con nombre comúnmente usadas**, como en el siguiente ejemplo de `CommonPointcuts`:
 
 ```java
-package com.xyz;
-
 import org.aspectj.lang.annotation.Pointcut;
 
 public class CommonPointcuts {
@@ -3012,15 +3024,19 @@ public class CommonPointcuts {
 }
 ```
 
+- [Declaring a Pointcut - Spring Framework](https://docs.spring.io/spring-framework/reference/core/aop/ataspectj/pointcuts.html)
+
 - [The AspectJ Programming Guide - Eclipse](https://eclipse.dev/aspectj/doc/released/progguide/index.html)
 
 - [The AspectJ 5 Development Kit Developer's Notebook - Eclipse](https://eclipse.dev/aspectj/doc/released/adk15notebook/index.html)
 
-#### [Declaring Advice](https://docs.spring.io/spring-framework/reference/core/aop/ataspectj/advice.html)
+#### Declaring Advice
 
 El _advice_ está asociado con una expresión de _pointcut_ y se ejecuta antes, después o alrededor de las ejecuciones de métodos que coinciden con el _pointcut_.
 
 La expresión puede ser una expresión de _pointcut_ en línea o una referencia a un _pointcut_ con nombre.
+
+- [Declaring Advice - Spring Framework](https://docs.spring.io/spring-framework/reference/core/aop/ataspectj/advice.html)
 
 ##### Before Advice
 
