@@ -3204,13 +3204,20 @@ En Spring AOP, el _around advice_ requiere que se declare un primer parámetro d
 
 ---
 
-## Referencias
+## Enlaces
 
-- <https://spring.io/>
-- <https://docs.spring.io/spring-framework/reference/>
-- <https://docs.spring.io/spring-boot/>
+### Spring
 
-### Guías (Baeldung)
+- 🔸 [Spring](https://spring.io/)
+- ⭐ [Spring Framework](https://spring.io/projects/spring-framework)
+- ⭐ [Spring Boot](https://spring.io/projects/spring-boot)
+- [Spring Framework Documentation](https://docs.spring.io/spring-framework/reference/index.html)
+- [Spring Boot Documentation](https://docs.spring.io/spring-boot/index.html)
+- 📕 <https://goalkicker.com/SpringFrameworkBook/>
+- <https://roadmap.sh/spring-boot>
+- <https://eclipse.dev/aspectj/>
+
+### Spring - Learn
 
 - [Spring Framework Introduction](https://www.baeldung.com/spring-intro)
 - [Learn Spring Boot](https://www.baeldung.com/spring-boot)
@@ -3219,6 +3226,13 @@ En Spring AOP, el _around advice_ requiere que se declare un primer parámetro d
 - [REST with Spring Tutorial](https://www.baeldung.com/rest-with-spring-series)
 - [Security with Spring](https://www.baeldung.com/security-spring)
 - [All Spring Data Guides](https://www.baeldung.com/spring-data)
+- <https://spring.academy/>
+- <https://spring.io/blog>
+- <https://dev.to/burakboduroglu/spring-boot-cheat-sheet-460c>
+- <https://www.geeksforgeeks.org/spring-boot/>
+- <https://www.javatpoint.com/spring-boot-annotations>
+- <https://www.adevguide.com/all-spring-annotations-cheat-sheet>
+- <https://www.techferry.com/articles/spring-annotations.html>
 
 ## Licencia
 
