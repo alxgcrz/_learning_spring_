@@ -3217,7 +3217,7 @@ En Spring AOP, el _around advice_ requiere que se declare un primer parámetro d
 - <https://roadmap.sh/spring-boot>
 - <https://eclipse.dev/aspectj/>
 
-### Spring - Learn
+### Spring - Learning
 
 - [Spring Framework Introduction](https://www.baeldung.com/spring-intro)
 - [Learn Spring Boot](https://www.baeldung.com/spring-boot)
