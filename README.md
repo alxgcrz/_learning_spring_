@@ -2217,21 +2217,21 @@ La anotación `@Lock` en Spring Data JPA se utiliza para especificar el nivel de
 
 La anotación `@Lock` admite varios tipos principales de bloqueo:
 
-- **`LockModeType.NONE`**: no se aplica ningún bloqueo. Este es el **modo predeterminado** si no se especifica un tipo de bloqueo.
+- `LockModeType.NONE`: no se aplica ningún bloqueo. Este es el **modo predeterminado** si no se especifica un tipo de bloqueo.
 
-- **`LockModeType.PESSIMISTIC_READ`: este bloqueo permite que otras transacciones lean los datos, pero no permite actualizaciones. Es útil para evitar que los datos cambien mientras se está leyendo.
+- `LockModeType.PESSIMISTIC_READ`: este bloqueo permite que otras transacciones lean los datos, pero no permite actualizaciones. Es útil para evitar que los datos cambien mientras se está leyendo.
 
-- **`LockModeType.PESSIMISTIC_WRITE`**: este bloqueo evita que otras transacciones lean o actualicen los datos mientras se mantiene el bloqueo. Es útil cuando se necesita asegurarse de que nadie más pueda leer o modificar los datos hasta que la transacción actual termine.
+- `LockModeType.PESSIMISTIC_WRITE`: este bloqueo evita que otras transacciones lean o actualicen los datos mientras se mantiene el bloqueo. Es útil cuando se necesita asegurarse de que nadie más pueda leer o modificar los datos hasta que la transacción actual termine.
 
-- **`LockModeType.PESSIMISTIC_FORCE_INCREMENT`**: adquiere un bloqueo de escritura pesimista e incrementa la versión de la entidadasegurando que las transacciones concurrentes vean la nueva versión de la entidad.
+- `LockModeType.PESSIMISTIC_FORCE_INCREMENT`: adquiere un bloqueo de escritura pesimista e incrementa la versión de la entidad asegurando que las transacciones concurrentes vean la nueva versión de la entidad.
 
-- **`LockModeType.OPTIMISTIC`**: utiliza el bloqueo optimista, que se basa en versiones. Permite que múltiples transacciones lean y actualicen los datos, pero verifica al final de la transacción si los datos han cambiado desde la última lectura. Si es así, lanza una excepción `OptimisticLockException`.
+- `LockModeType.OPTIMISTIC`: utiliza el bloqueo optimista, que se basa en versiones. Permite que múltiples transacciones lean y actualicen los datos, pero verifica al final de la transacción si los datos han cambiado desde la última lectura. Si es así, lanza una excepción `OptimisticLockException`.
 
-- **`LockModeType.OPTIMISTIC_FORCE_INCREMENT`**: similar al bloqueo optimista, pero además incrementa la versión de la entidad, asegurando que cualquier otra transacción que quiera leer los datos tendrá que esperar hasta que la transacción actual complete.
+- `LockModeType.OPTIMISTIC_FORCE_INCREMENT`: similar al bloqueo optimista, pero además incrementa la versión de la entidad, asegurando que cualquier otra transacción que quiera leer los datos tendrá que esperar hasta que la transacción actual complete.
 
-- **`LockModeType.READ`: sinónimo de `OPTIMISTIC`, aunque se utiliza raramente en la práctica.
+- `LockModeType.READ`: sinónimo de `OPTIMISTIC`, aunque se utiliza raramente en la práctica.
 
-- **`LockModeType.WRITE`: sinónimo de `OPTIMISTIC_FORCE_INCREMENT` también poco utilizado en la práctica.
+- `LockModeType.WRITE`: sinónimo de `OPTIMISTIC_FORCE_INCREMENT` también poco utilizado en la práctica.
 
 Es importante considerar que los **bloqueos pesimistas** pueden afectar el rendimiento de la base de datos, ya que impiden que otras transacciones accedan a los datos bloqueados.
 
