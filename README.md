@@ -3202,6 +3202,198 @@ public class AroundExample {
 
 En Spring AOP, el _around advice_ requiere que se declare un primer parámetro de tipo [`ProceedingJoinPoint`](https://eclipse.dev/aspectj/doc/released/runtime-api/org/aspectj/lang/ProceedingJoinPoint.html), que es una subclase de `JoinPoint`.
 
+## Spring Test
+
+- [Testing in Spring Boot](https://docs.spring.io/spring-boot/reference/testing/index.html)
+
+- [Testing in Spring Framework](https://docs.spring.io/spring-framework/reference/testing.html)
+
+- [Testing in Spring Boot - Baeldung](https://www.baeldung.com/spring-boot-testing)
+
+El proyecto `spring-boot-starter-test` es el _starter_ recomendado por **Spring Boot** para realizar pruebas en aplicaciones Spring. Este _starter_ agrupa y configura automáticamente un conjunto de librerías populares para facilitar la escritura de tests unitarios, de integración y de componentes en entornos Spring. Al incluir esta dependencia en el proyecto, se dispone de herramientas modernas para pruebas, aserciones, mocks, validación de JSON y utilidades para pruebas asíncronas, todo preconfigurado para funcionar de manera óptima con Spring Boot.
+
+Las principales librerías incluidas son:
+
+- **JUnit 5**: Framework estándar para la ejecución y organización de pruebas en Java.
+- **Spring Test**: Utilidades y anotaciones para pruebas de integración con el contexto de Spring.
+- **AssertJ**: Librería de aserciones fluida y expresiva.
+- **Hamcrest**: Matchers para aserciones más legibles y flexibles.
+- **Mockito**: Framework para la creación de objetos simulados (_mocks_) y pruebas de comportamiento.
+- **JSONassert**: Herramienta para comparar y validar estructuras JSON en pruebas.
+- **JsonPath**: Permite consultar y validar fragmentos de JSON.
+- **Awaitility**: Facilita la escritura de tests para código asíncrono o basado en concurrencia.
+
+Esto permite escribir pruebas robustas y expresivas, cubriendo desde la lógica de negocio hasta la integración de componentes y APIs REST, con una configuración mínima.
+
+```xml
+<dependency>
+  <groupId>org.springframework.boot</groupId>
+  <artifactId>spring-boot-starter-test</artifactId>
+  <scope>test</scope>
+</dependency>
+```
+
+Ejemplo de `@Service`:
+
+```java
+@Service
+public class UserService {
+    
+    private final UserRepository userRepository;
+
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    public Optional<User> findUserById(Long id) {
+        return userRepository.findById(id);
+    }
+}
+```
+
+Test unitario del servicio:
+
+```java
+@ExtendWith(MockitoExtension.class) // Habilita Mockito en JUnit 5. Habilita el uso de @Mock y @InjectMocks.
+class UserServiceTest {
+
+    @Mock // Crea un objeto simulado de una dependencia (sin lógica real).
+    private UserRepository userRepository;
+
+    @InjectMocks // Crea una instancia real del objeto a probar (UserService) e inyecta los mocks automáticamente.
+    private UserService userService;
+
+    @Test
+    void testFindUserById_UserExists() {
+        // Arrange (preparación del escenario)
+        User user = new User(1L, "Alice");
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        // Act (ejecución del método a testear)
+        Optional<User> result = userService.findUserById(1L);
+
+        // Assert (verificación del resultado)
+        assertTrue(result.isPresent());
+        assertEquals("Alice", result.get().getName());
+    }
+}
+```
+
+Controlador REST de ejemplo:
+
+```java
+@RestController
+@RequestMapping("/users")
+public class UserController {
+
+    private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<User> getUser(@PathVariable Long id) {
+        return userService.findUserById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+}
+```
+
+Test usando `@WebMvcTest`:
+
+```java
+// Carga solo el controlador especificado y los beans necesarios para la capa web (como MockMvc). Ideal para pruebas de controladores REST.
+@WebMvcTest(UserController.class)
+class UserControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc; // Herramienta de Spring que simula llamadas HTTP sin levantar un servidor. Permite hacer get, post, etc., y validar respuestas.
+
+    @MockBean // Mockea el UserService y lo inyecta en el controlador
+    private UserService userService;
+
+    @Test
+    void testGetUser_ReturnsUser() throws Exception {
+        // Arrange
+        User user = new User(1L, "Alice");
+        when(userService.findUserById(1L)).thenReturn(Optional.of(user));
+
+        // Act & Assert
+        mockMvc.perform(get("/users/1")) // Simula GET /users/1
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Alice"));
+    }
+
+    @Test
+    void testGetUser_NotFound() throws Exception {
+        // Arrange
+        when(userService.findUserById(2L)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        mockMvc.perform(get("/users/2"))
+                .andExpect(status().isNotFound());
+    }
+}
+```
+
+Entidad y repositorio:
+
+```java
+// Entidad
+@Entity
+public class User {
+
+    @Id
+    private Long id;
+
+    private String name;
+
+    // Constructores, getters, setters
+}
+
+// Repository
+public interface UserRepository extends JpaRepository<User, Long> {
+    List<User> findByNameContainingIgnoreCase(String name);
+}
+```
+
+Test con `@DataJpaTest`:
+
+```java
+@DataJpaTest // Carga solo los componentes de JPA (repos, entidades, etc.)
+class UserRepositoryTest {
+
+    @Autowired
+    private TestEntityManager entityManager; // Permite persistir datos para los tests
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Test
+    void testFindByNameContainingIgnoreCase() {
+        // Arrange
+        User user1 = new User(1L, "Alice");
+        User user2 = new User(2L, "Alicia");
+        User user3 = new User(3L, "Bob");
+
+        entityManager.persist(user1);
+        entityManager.persist(user2);
+        entityManager.persist(user3);
+        entityManager.flush();
+
+        // Act
+        List<User> results = userRepository.findByNameContainingIgnoreCase("ali");
+
+        // Assert
+        assertEquals(2, results.size());
+        assertTrue(results.stream().anyMatch(u -> u.getName().equals("Alice")));
+        assertTrue(results.stream().anyMatch(u -> u.getName().equals("Alicia")));
+    }
+}
+```
+
 ---
 
 ## Enlaces
